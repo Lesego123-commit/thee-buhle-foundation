@@ -1,0 +1,192 @@
+@page "/events"
+@model EventsModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Events</p>
+    <h1 class="d2">Come and stand with us</h1>
+    <p class="lede">
+        Workshops, fundraisers, open days and community activities. Most are free; where there is a fee
+        it goes straight into programme costs.
+    </p>
+</header>
+
+@*
+    Filtering is client-side, driven by the data-category attribute on each
+    card. The whole list is a handful of events, so a round trip per filter
+    would be slower and would lose the scroll position for no benefit.
+*@
+<div class="filterbar" data-singleselect data-filter-target="#eventList" data-filter-count="#filterCount">
+    <span class="alabel" style="margin:0">Show</span>
+    <div class="chipset">
+        <button type="button" class="tog tog--gold" data-filter="all" aria-pressed="true">All types</button>
+        @foreach (var (value, label, _) in EventsModel.Types)
+        {
+            <button type="button" class="tog tog--gold" data-filter="@value" aria-pressed="false">@label</button>
+        }
+    </div>
+    <span class="dim spread" style="font-size:12.5px" id="filterCount">
+        @Model.Upcoming.Count upcoming @(Model.Upcoming.Count == 1 ? "event" : "events")
+    </span>
+</div>
+
+<section class="band band--cream">
+    @if (Model.Upcoming.Count == 0)
+    {
+        <div class="notice notice--info">
+            <span aria-hidden="true">📅</span>
+            <div>
+                <b>Nothing on the calendar just yet.</b>
+                We run events through the school terms — subscribe below and we will email you when the next
+                one opens.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid" style="gap:18px" id="eventList">
+            @foreach (var occasion in Model.Upcoming)
+            {
+                <article class="evcard" id="@occasion.Slug" data-category="@occasion.Type">
+                    <div class="evdate">
+                        <b class="num">@occasion.StartsAt.ToString("dd")</b>
+                        <span>@occasion.StartsAt.ToString("MMM").ToUpperInvariant()</span>
+                    </div>
+
+                    <div style="flex:1">
+                        <div class="row" style="gap:10px">
+                            <span class="chip @EventsModel.ChipFor(occasion.Type)">
+                                @EventsModel.LabelFor(occasion.Type).ToUpperInvariant()
+                            </span>
+                            <span class="dim" style="font-size:11.5px;font-weight:500">
+                                @EventsModel.FeeFor(occasion)
+                            </span>
+                        </div>
+
+                        <h2 class="d5" style="margin-top:12px;font-size:24px">@occasion.Title</h2>
+
+                        <p class="quiet" style="margin:8px 0">
+                            📍 @(occasion.Location ?? occasion.VenueName ?? "")
+                            &nbsp;·&nbsp; 🕐 @occasion.StartsAt.ToString("dddd d MMMM, HH\\hmm")
+                            @if (occasion.EndsAt is { } ends)
+                            {
+                                <text> – @ends.ToString("HH:mm")</text>
+                            }
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(occasion.Description))
+                        {
+                            <p class="quiet" style="margin:0 0 16px">@occasion.Description</p>
+                        }
+
+                        @if (occasion.IsFull)
+                        {
+                            @*
+                                A closed state rather than a form. The capacity
+                                check happens inside a locking transaction, so a
+                                form here would take somebody's details and then
+                                refuse them — which is worse than telling them
+                                now.
+                            *@
+                            <div class="notice notice--warn" style="margin-bottom:8px">
+                                <span aria-hidden="true">⚑</span>
+                                <div>
+                                    <b>This event is full.</b>
+                                    We usually add a second date — subscribe to our newsletter and we will tell you.
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <details>
+                                <summary class="btn btn--forest btn--s" style="list-style:none;display:inline-flex">Register</summary>
+
+                                <form class="card card--cream pad-s" data-event-form="@occasion.EventId"
+                                      style="margin-top:14px;max-width:520px" novalidate>
+                                    <p class="notice" data-notice hidden></p>
+
+                                    <div class="grid g2" style="gap:14px">
+                                        <label class="f">
+                                            <span>Your name<span class="req" aria-hidden="true">*</span></span>
+                                            <input class="input" name="attendeeName" type="text" required autocomplete="name">
+                                            <span class="field-error" data-error-for="attendeeName"></span>
+                                        </label>
+                                        <label class="f">
+                                            <span>Email address<span class="req" aria-hidden="true">*</span></span>
+                                            <input class="input" name="email" type="email" required autocomplete="email">
+                                            <span class="field-error" data-error-for="email"></span>
+                                        </label>
+                                        <label class="f">
+                                            <span>Mobile number</span>
+                                            <input class="input" name="phone" type="tel" autocomplete="tel">
+                                            <span class="field-error" data-error-for="phone"></span>
+                                        </label>
+                                        <label class="f">
+                                            <span>How many people?</span>
+                                            <input class="input" name="partySize" type="number" min="1" max="20" value="1" inputmode="numeric">
+                                            <span class="field-error" data-error-for="partySize"></span>
+                                        </label>
+                                    </div>
+
+                                    <label class="check" style="margin-top:14px">
+                                        <input type="checkbox" name="consentPopia" required>
+                                        <span>I consent to Thee Buhle Foundation holding these details in order to register me (POPIA).<span class="req" aria-hidden="true">*</span></span>
+                                    </label>
+                                    <span class="field-error" data-error-for="consentPopia"></span>
+
+                                    <button class="btn btn--forest" style="margin-top:16px" type="submit">Confirm registration</button>
+                                </form>
+                            </details>
+                        }
+
+                        <p class="row" style="gap:12px;margin:12px 0 0">
+                            <span style="font-size:12px;color:var(--gold);font-weight:600" data-places-left="@occasion.EventId">
+                                @if (occasion.PlacesLeft is null)
+                                {
+                                    @* A capacity of zero means uncapped in this schema. *@
+                                    <text>Walk-ins welcome</text>
+                                }
+                                else
+                                {
+                                    <text>@occasion.Registered registered · @occasion.PlacesLeft places left</text>
+                                }
+                            </span>
+                        </p>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+@if (Model.Past.Count > 0)
+{
+    <section class="band band--white">
+        <div class="head">
+            <div class="grow">
+                <p class="eyebrow">Already happened</p>
+                <h2 class="d3" style="margin-top:16px">What the community turned up for</h2>
+            </div>
+        </div>
+
+        <div class="grid g3">
+            @for (var i = 0; i < Model.Past.Count; i++)
+            {
+                var occasion = Model.Past[i];
+
+                <article class="card card--cream" style="overflow:hidden">
+                    <div class="ph" style="height:180px;background:@IndexModel.GradientFor(i)">Photo · @occasion.Title</div>
+                    <div class="pad-s">
+                        <h3 class="d5">@occasion.Title</h3>
+                        <p class="quiet" style="margin:8px 0">
+                            @occasion.StartsAt.ToString("d MMM yyyy")
+                            @if (occasion.Registered > 0)
+                            {
+                                <text> · @occasion.Registered attended</text>
+                            }
+                        </p>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}

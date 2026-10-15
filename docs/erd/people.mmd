@@ -1,0 +1,118 @@
+erDiagram
+    learners ||--o{ assessment_results : "learner_id"
+    learners ||--o{ attendance : "learner_id"
+    learners ||--o{ buddy_requests : "requester_id"
+    learners ||--o{ buddy_requests : "recipient_id"
+    learners ||--o{ consents : "learner_id"
+    learners ||--o{ enrolments : "learner_id"
+    learners |o--o{ event_registrations : "learner_id"
+    learners ||--o{ group_memberships : "learner_id"
+    learners ||--o{ guardian_links : "learner_id"
+    learners ||--o{ learner_badges : "learner_id"
+    learners ||--o| learner_summaries : "learner_id"
+    learners ||--o{ mentor_assignments : "learner_id"
+    learners ||--o{ resource_progress : "learner_id"
+    learners ||--o| sponsorships : "learner_id"
+    mentors ||--o{ mentor_assignments : "mentor_id"
+    parent_guardians ||--o{ consents : "parent_id"
+    parent_guardians ||--o{ guardian_links : "parent_id"
+    users ||--o{ account_codes : "user_id"
+    users ||--o{ account_codes : "issued_by"
+    users ||--o{ device_tokens : "user_id"
+    users |o--o{ donors : "user_id"
+    users |o--o| learners : "user_id"
+    users ||--o| mentors : "user_id"
+    users ||--o{ message_recipients : "user_id"
+    users ||--o{ notification_preferences : "user_id"
+    users ||--o{ notifications : "user_id"
+    users ||--o| parent_guardians : "user_id"
+    users ||--o{ refresh_tokens : "user_id"
+    users ||--o| staff : "user_id"
+    users |o--o{ volunteer_applications : "user_id"
+    account_codes {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar purpose
+        nvarchar code_hash
+        datetimeoffset expires_at
+        datetimeoffset used_at
+        datetimeoffset revoked_at
+        int failed_attempts
+        uniqueidentifier issued_by FK
+    }
+    audit_log {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar action
+        nvarchar entity_name
+        nvarchar entity_id
+        nvarchar before_json
+        nvarchar after_json
+        nvarchar ip_address
+        nvarchar user_agent
+        datetimeoffset occurred_at
+    }
+    guardian_links {
+        uniqueidentifier parent_id PK,FK
+        uniqueidentifier learner_id PK,FK
+        bit is_primary
+    }
+    learners {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK,UK
+        nvarchar reference_code UK
+        nvarchar first_name
+        nvarchar surname
+        date date_of_birth
+        int grade
+        nvarchar school
+        nvarchar suburb
+        nvarchar ambition
+        bit photo_consent
+    }
+    mentors {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK,UK
+        nvarchar first_name
+        nvarchar surname
+        nvarchar occupation
+        nvarchar clearance_status
+        date clearance_expiry
+    }
+    parent_guardians {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK,UK
+        nvarchar first_name
+        nvarchar surname
+        nvarchar phone
+        nvarchar alt_phone
+        nvarchar relationship
+        date contact_confirmed_at
+    }
+    refresh_tokens {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar token_hash UK
+        nvarchar device
+        datetimeoffset expires_at
+        datetimeoffset revoked_at
+    }
+    staff {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK,UK
+        nvarchar first_name
+        nvarchar surname
+        nvarchar job_title
+        bit is_safeguarding_lead UK
+    }
+    users {
+        uniqueidentifier id PK
+        nvarchar email UK
+        nvarchar password_hash
+        nvarchar role
+        nvarchar status
+        bit mfa_enabled
+        int failed_attempts
+        datetimeoffset locked_until
+        datetimeoffset last_login_at
+    }

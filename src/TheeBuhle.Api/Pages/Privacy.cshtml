@@ -1,0 +1,151 @@
+@page "/privacy"
+@model PrivacyModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Privacy policy</p>
+    <h1 class="d2">Privacy policy</h1>
+    <p class="lede">
+        How we collect, use and protect personal information, in line with the Protection of Personal
+        Information Act, 2013 (POPIA). Last reviewed @PolicyReview.Describe(PolicyReview.Privacy).
+    </p>
+</header>
+
+<section class="band band--white">
+    <div class="prose" style="max-width:74ch">
+        <h2 class="d4">Who we are</h2>
+        <p class="lede">
+            Thee Buhle Foundation is
+            @(Registration.HasNpoNumber ? $"a registered non-profit organisation ({Registration.NpoDisplay})" : "a non-profit organisation")@(Registration.HasPboNumber ? $" and public benefit organisation ({Registration.PboDisplay})" : "")
+            based at Cornwallis Street S.E.7, Vanderbijlpark, Gauteng. We are
+            the responsible party for the personal information described below. Our information officer can be
+            reached at <a href="mailto:hello@@theebuhlefoundation.co.za">hello@@theebuhlefoundation.co.za</a>.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">What we collect, and why</h2>
+
+        <div class="tablewrap" style="margin-top:18px" tabindex="0" role="region" aria-label="What we collect and why">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Who</th>
+                        <th scope="col">What we hold</th>
+                        <th scope="col">Why</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Learners</th>
+                        <td>Name, date of birth, grade, school, suburb, attendance record, school-issued marks, and a reference code.</td>
+                        <td>To run the programmes, to report to parents, and to measure whether what we do works.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Parents and guardians</th>
+                        <td>Name, relationship, phone numbers, email address, and the consent decisions you record.</td>
+                        <td>To contact you about your child, and to hold your permission for activities.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Mentors and volunteers</th>
+                        <td>Name, contact details, skills, availability, and clearance status. <b>Only the last four digits of your ID number.</b></td>
+                        <td>To match you to a learner, and to record that you have been screened.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Donors</th>
+                        <td>Name, email address, phone number, amount, and the payment provider&rsquo;s reference. <b>No card details.</b></td>
+                        <td>@(Registration.CanIssueCertificates ? "To issue your receipt and Section 18A certificate." : "To issue your receipt.")</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Website visitors</th>
+                        <td>The message you send us, and the IP address it came from.</td>
+                        <td>To answer you, and to stop automated abuse of our forms.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="d4" style="margin-top:40px">Things we deliberately do not do</h2>
+        <ul style="font-size:16px;line-height:1.8">
+            <li>
+                <b>We never store card details.</b> When you donate, your card is entered on our payment
+                provider&rsquo;s own site. All that reaches us is your name, your email address and a payment
+                reference.
+            </li>
+            <li>
+                <b>We do not keep your full ID number.</b> It is needed for the SAPS clearance application,
+                which we submit on your behalf. We retain only the last four digits, which is enough to match
+                a returned certificate to an application.
+            </li>
+            <li>
+                <b>We never publish a learner&rsquo;s name or photograph.</b> Learners appear publicly — on our
+                Sponsor a Child page — as a reference code, a grade and a suburb. A sponsor is introduced to
+                their learner by name only after the sponsorship is confirmed and the guardian has given
+                written consent.
+            </li>
+            <li>
+                <b>We do not sell, rent or share your information for marketing.</b> Ever, by anyone,
+                for any amount.
+            </li>
+            <li>
+                <b>We do not use advertising or analytics trackers on this website.</b> There are no
+                third-party cookies, so there is no cookie banner to dismiss.
+            </li>
+        </ul>
+
+        <h2 class="d4" style="margin-top:40px">Consent, and changing your mind</h2>
+        <p class="lede">
+            Where we need your permission for something — a camp, a photograph, a trip — we ask for it
+            explicitly and we keep the answer. <b>Withdrawing permission does not erase the record that you
+            once gave it.</b> Instead, a withdrawal is recorded as a new decision, so the full history stays
+            reconstructible: if you ask us what you agreed to and when you changed your mind, we can tell you
+            precisely. That is a POPIA requirement and it is how our system is built.
+        </p>
+        <p class="lede">
+            You can withdraw a permission at any time in the parent app, or by phoning us on
+            <a href="tel:+27710000000">+27 71 000 0000</a>.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">Your rights under POPIA</h2>
+        <p class="lede">You have the right to:</p>
+        <ul style="font-size:16px;line-height:1.8">
+            <li>ask what personal information we hold about you or your child, and receive a copy;</li>
+            <li>ask us to correct anything that is wrong;</li>
+            <li>ask us to delete information we no longer have a reason to keep;</li>
+            <li>object to how we are using it;</li>
+            <li>complain to the Information Regulator of South Africa.</li>
+        </ul>
+        <p class="lede">
+            Email <a href="mailto:hello@@theebuhlefoundation.co.za">hello@@theebuhlefoundation.co.za</a> and we
+            will respond within 30 days. There is no charge for a first request.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">How long we keep things</h2>
+        <ul style="font-size:16px;line-height:1.8">
+            <li><b>Learner records</b> — while the learner is on a programme, and then for five years, so we can confirm participation for a bursary or a job application later.</li>
+            <li><b>Consent records</b> — seven years, as evidence of what was agreed.</li>
+            <li><b>Donation records</b> — seven years, as SARS requires for Section 18A.</li>
+            <li><b>Volunteer clearance documents</b> — seven years after the volunteer leaves, then purged automatically.</li>
+            <li><b>Website enquiries</b> — two years.</li>
+        </ul>
+
+        <h2 class="d4" style="margin-top:40px">How we protect it</h2>
+        <p class="lede">
+            Data is held in South Africa. Passwords are stored as Argon2id hashes and are never recoverable,
+            including by us. Access is by role: a parent can see their own child and no other, and a
+            safeguarding concern about a child is visible to our designated safeguarding lead alone. Every
+            change to a learner&rsquo;s record is logged with who made it and when, and that log cannot be edited or
+            deleted by anybody, including an administrator.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">Children</h2>
+        <p class="lede">
+            Most of the people we work with are under 18. We collect their information with the written
+            consent of a parent or guardian, we hold the minimum we need to run a programme and report on it,
+            and we never make it public. Learners over 13 with their own app account can see their own record
+            and nobody else&rsquo;s.
+        </p>
+
+        <p class="dim" style="margin-top:40px;font-size:13px">
+            Related: our <a href="/safeguarding">child safeguarding policy</a>, which sets out how a concern
+            about a child is handled and who may work with our learners.
+        </p>
+    </div>
+</section>

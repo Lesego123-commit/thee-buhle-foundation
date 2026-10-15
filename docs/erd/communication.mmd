@@ -1,0 +1,75 @@
+erDiagram
+    announcements ||--o{ message_recipients : "announcement_id"
+    events |o--o{ permission_forms : "event_id"
+    learners ||--o{ consents : "learner_id"
+    parent_guardians ||--o{ consents : "parent_id"
+    permission_forms ||--o{ consents : "form_id"
+    programmes |o--o{ permission_forms : "programme_id"
+    users ||--o{ device_tokens : "user_id"
+    users ||--o{ message_recipients : "user_id"
+    users ||--o{ notification_preferences : "user_id"
+    users ||--o{ notifications : "user_id"
+    announcements {
+        uniqueidentifier id PK
+        nvarchar title
+        nvarchar body_html
+        nvarchar category
+        nvarchar audience
+        bit action_required
+        date due_date
+        uniqueidentifier published_by FK
+        datetimeoffset published_at
+    }
+    consents {
+        uniqueidentifier id PK
+        bigint sequence
+        uniqueidentifier form_id FK
+        uniqueidentifier learner_id FK
+        uniqueidentifier parent_id FK
+        nvarchar decision
+        datetimeoffset signed_at
+        nvarchar signature_ref
+        nvarchar ip_address
+    }
+    device_tokens {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar token UK
+        nvarchar platform
+        nvarchar app_version
+        datetimeoffset last_seen_at
+        datetimeoffset revoked_at
+    }
+    message_recipients {
+        uniqueidentifier announcement_id PK,FK
+        uniqueidentifier user_id PK,FK
+        datetimeoffset read_at
+        datetimeoffset delivered_at
+    }
+    notification_preferences {
+        uniqueidentifier user_id PK,FK
+        nvarchar category PK
+        nvarchar channel
+        bit enabled
+    }
+    notifications {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar category
+        nvarchar icon
+        nvarchar title
+        nvarchar body
+        nvarchar link
+        nvarchar channel
+        nvarchar delivery_status
+        datetimeoffset read_at
+    }
+    permission_forms {
+        uniqueidentifier id PK
+        uniqueidentifier event_id FK
+        uniqueidentifier programme_id FK
+        nvarchar title
+        nvarchar body
+        date due_date
+        uniqueidentifier created_by FK
+    }

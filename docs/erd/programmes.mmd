@@ -1,0 +1,60 @@
+erDiagram
+    learners ||--o{ attendance : "learner_id"
+    learners ||--o{ enrolments : "learner_id"
+    programmes ||--o{ enrolments : "programme_id"
+    programmes |o--o{ permission_forms : "programme_id"
+    programmes ||--o{ sessions : "programme_id"
+    sessions ||--o{ attendance : "session_id"
+    venues |o--o{ events : "venue_id"
+    venues |o--o{ peer_groups : "venue_id"
+    venues ||--o{ sessions : "venue_id"
+    attendance {
+        uniqueidentifier id PK
+        uniqueidentifier session_id FK,UK
+        uniqueidentifier learner_id FK,UK
+        nvarchar status
+        datetimeoffset arrived_at
+        nvarchar note
+        uniqueidentifier recorded_by FK
+    }
+    enrolments {
+        uniqueidentifier id PK
+        uniqueidentifier learner_id FK,UK
+        uniqueidentifier programme_id FK,UK
+        nvarchar term UK
+        nvarchar status
+        datetimeoffset enrolled_at
+    }
+    programmes {
+        uniqueidentifier id PK
+        nvarchar slug UK
+        nvarchar number
+        nvarchar name
+        nvarchar summary
+        nvarchar description
+        nvarchar expectations
+        nvarchar how_to_join
+        nvarchar cta_label
+        nvarchar audience
+        nvarchar capacity_note
+        int min_grade
+        int max_grade
+        bit is_active
+        int sort_order
+    }
+    sessions {
+        uniqueidentifier id PK
+        uniqueidentifier programme_id FK
+        uniqueidentifier venue_id FK
+        datetimeoffset starts_at
+        datetimeoffset ends_at
+        nvarchar subject_focus
+        nvarchar room
+        int capacity
+    }
+    venues {
+        uniqueidentifier id PK
+        nvarchar name
+        nvarchar address
+        int capacity
+    }

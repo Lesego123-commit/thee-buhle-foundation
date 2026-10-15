@@ -1,0 +1,171 @@
+@page "/contact"
+@model ContactModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Contact</p>
+    <h1 class="d2">Talk to us</h1>
+    <p class="lede">
+        General enquiries, media requests, or a conversation about partnering with us.
+        We answer every message — usually within two working days.
+    </p>
+</header>
+
+<section class="band band--white">
+    <div class="grid split" style="grid-template-columns:1fr 400px;gap:56px;align-items:start">
+
+        <form class="card card--cream pad" id="contactForm" novalidate>
+            <h2 class="d4">Send us a message</h2>
+
+            <p class="notice" data-notice hidden></p>
+
+            <fieldset style="margin-top:20px">
+                <legend class="alabel" style="margin:0 0 10px">What is this about?</legend>
+                <div class="chipset" data-singleselect data-collect="topic">
+                    @foreach (var (value, label) in ContactModel.Topics)
+                    {
+                        var chosen = string.Equals(value, Model.SelectedTopic, StringComparison.Ordinal);
+
+                        <button type="button" class="tog" data-value="@value"
+                                aria-pressed="@(chosen ? "true" : "false")">@label</button>
+                    }
+                </div>
+                <span class="field-error" data-error-for="topic"></span>
+            </fieldset>
+
+            <div class="grid g2" style="margin:26px 0 16px;gap:18px">
+                <label class="f">
+                    <span>Your name<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="name" type="text" required autocomplete="name" placeholder="Thabo Nkosi">
+                    <span class="field-error" data-error-for="name"></span>
+                </label>
+                <label class="f">
+                    <span>Organisation <span class="dim" style="font-weight:400">(optional)</span></span>
+                    <input class="input" name="organisation" type="text" autocomplete="organization" placeholder="Vaal Logistics (Pty) Ltd">
+                    <span class="field-error" data-error-for="organisation"></span>
+                </label>
+                <label class="f">
+                    <span>Email address<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="email" type="email" required autocomplete="email" placeholder="thabo@@vaallogistics.co.za">
+                    <span class="field-error" data-error-for="email"></span>
+                </label>
+                <label class="f">
+                    <span>Phone number <span class="dim" style="font-weight:400">(optional)</span></span>
+                    <input class="input" name="phone" type="tel" autocomplete="tel" placeholder="082 000 0000">
+                    <span class="field-error" data-error-for="phone"></span>
+                </label>
+            </div>
+
+            <label class="f">
+                <span>Your message<span class="req" aria-hidden="true">*</span></span>
+                <textarea class="input" name="body" rows="6" required style="min-height:130px"
+                          placeholder="Tell us what you need — the more detail, the better we can help."></textarea>
+                <span class="field-error" data-error-for="body"></span>
+            </label>
+
+            <label class="check" style="margin-top:18px">
+                <input type="checkbox" name="consentPopia" required>
+                <span>
+                    I consent to Thee Buhle Foundation storing these details in order to respond to my
+                    enquiry, in line with POPIA.<span class="req" aria-hidden="true">*</span>
+                </span>
+            </label>
+            <span class="field-error" data-error-for="consentPopia"></span>
+
+            <div class="row" style="margin-top:24px">
+                <button class="btn btn--forest" type="submit">Send message</button>
+                <a class="btn btn--ghost" href="https://wa.me/27710000000" rel="noopener noreferrer">WhatsApp us instead</a>
+            </div>
+        </form>
+
+        <aside class="grid" style="gap:20px">
+            <div class="ph" style="height:220px;background:linear-gradient(150deg,#5C6B4F,#8B7A55)">Map · Vanderbijlpark, Gauteng</div>
+
+            <div class="card pad-s">
+                <div class="list">
+                    <div style="display:block">
+                        <p class="eyebrow" style="font-size:10px">Office</p>
+                        <p class="quiet" style="margin:6px 0 0">Cornwallis Street S.E.7<br>Vanderbijlpark, Gauteng, 1911</p>
+                    </div>
+                    <div style="display:block">
+                        <p class="eyebrow" style="font-size:10px">Email</p>
+                        <p class="quiet" style="margin:6px 0 0">
+                            <a href="mailto:hello@@theebuhlefoundation.co.za">hello@@theebuhlefoundation.co.za</a><br>
+                            <a href="mailto:partnerships@@theebuhlefoundation.co.za">partnerships@@theebuhlefoundation.co.za</a>
+                        </p>
+                    </div>
+                    <div style="display:block">
+                        <p class="eyebrow" style="font-size:10px">Phone &amp; WhatsApp</p>
+                        <p class="quiet" style="margin:6px 0 0"><a href="tel:+27710000000">+27 71 000 0000</a></p>
+                    </div>
+                    <div style="display:block">
+                        <p class="eyebrow" style="font-size:10px">Office hours</p>
+                        <p class="quiet" style="margin:6px 0 0">Mon – Thu · 09h00 – 16h00<br>Sat · 08h30 – 13h00 (during term)</p>
+                    </div>
+                </div>
+            </div>
+
+            @*
+                Said on the page, next to the form, because the routing is
+                invisible: a concern goes to the safeguarding lead's mailbox and
+                is never delivered to the general enquiries inbox.
+            *@
+            <div class="card card--gold pad-s">
+                <h2 class="d5" style="color:var(--gold-d)">🛡 Reporting a child-safety concern</h2>
+                <p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                    Choose <b>Report a concern</b> above and your message goes directly to our designated
+                    safeguarding lead. It is not seen by programme staff.
+                </p>
+                <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                    You can also
+                    @if (Configuration["Safeguarding:Phone"] is { Length: > 0 } leadPhone)
+                    {
+                        <text>call <a href="tel:@SiteFormat.TelHref(leadPhone)" style="color:inherit">@leadPhone</a> or</text>
+                    }
+                    email <a href="mailto:safeguarding@@theebuhlefoundation.co.za" style="color:inherit">safeguarding@@theebuhlefoundation.co.za</a>.
+                </p>
+                <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                    <b>Childline South Africa: <a href="tel:116" style="color:inherit">116</a></b>, free and open
+                    24 hours, for a child who needs to talk or an adult worried about one.
+                </p>
+                <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                    <b>If a child is in immediate danger, call 10111 or the SAPS first.</b>
+                </p>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<section class="band band--cream" id="partner">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">For businesses, schools &amp; funders</p>
+            <h2 class="d3" style="margin-top:16px">Partner with us</h2>
+            <p class="lede" style="margin-top:14px">
+                Four ways organisations work with us. All of them come with a written agreement, quarterly
+                reporting and a B-BBEE socio-economic development certificate where applicable.
+            </p>
+        </div>
+    </div>
+
+    <div class="grid g4">
+        @foreach (var (number, heading, body, note) in ContactModel.Partnerships)
+        {
+            <div class="card pad">
+                <span style="font-family:var(--display);font-size:22px;font-weight:600;color:var(--gold)">@number</span>
+                <h3 class="d5" style="margin-top:12px;font-size:24px">@heading</h3>
+                <p class="quiet" style="margin:12px 0 18px">@body</p>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:var(--forest)">@note</p>
+            </div>
+        }
+    </div>
+
+    <div style="background:var(--white);padding:36px;margin-top:52px">
+        <p class="alabel" style="text-align:center;margin:0 0 24px">Current partners &amp; supporters</p>
+        <div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:24px;font-size:14px;font-weight:650;letter-spacing:.12em;color:var(--ink40)">
+            @foreach (var supporter in ContactModel.Supporters)
+            {
+                <span>@supporter</span>
+            }
+        </div>
+    </div>
+</section>

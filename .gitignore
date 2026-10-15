@@ -1,0 +1,56 @@
+# What must never reach the repository, and why.
+#
+# Three kinds of thing: build output that is regenerated from the source,
+# per-machine settings that would break somebody else's checkout, and anything
+# that could carry a secret. The last group is the reason this file is read
+# before every first commit.
+
+# ---------------------------------------------------------------- .NET build
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+.vs/
+artifacts/
+
+# -------------------------------------------------------------- Android build
+android/build/
+android/app/build/
+android/.gradle/
+android/.kotlin/
+android/captures/
+*.apk
+*.aab
+
+# Machine-specific: the Android SDK path on this computer, and nothing anybody
+# else's build should inherit.
+android/local.properties
+
+# Signing a release build. A keystore in a repository is a signing key anybody
+# who clones it can use to publish an app as the foundation.
+*.jks
+*.keystore
+keystore.properties
+
+# ------------------------------------------------------------------- secrets
+# The production connection string, both signing keys, the SMTP password and
+# the PayFast merchant details live in App Service configuration. Nothing here
+# should ever exist in the working tree, and if it does it stays out.
+appsettings.Production.json
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.p12
+.env
+.env.*
+
+# The Afrihost DNS export. Kept locally as the "before" copy of the client's
+# zone; it is the client's data and does not belong in a student repository.
+hosting details/
+
+# ---------------------------------------------------------------------- noise
+.DS_Store
+Thumbs.db
+*.log
+*.tmp

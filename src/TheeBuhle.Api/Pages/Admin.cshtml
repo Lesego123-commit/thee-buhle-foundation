@@ -1,0 +1,460 @@
+@page "/admin"
+@model AdminModel
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="en-ZA">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Staff console · Thee Buhle Foundation</title>
+
+    @* The console must never be indexed, and must never appear in a referrer. *@
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@@500;600&family=Inter:wght@@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="~/assets/css/heritage.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/assets/css/admin.css" asp-append-version="true">
+</head>
+<body class="admin">
+
+@*
+    The staff console.
+
+    100% API-driven: this page contains no data, and every screen below is
+    rendered from a call to the same REST API the mobile app uses. That is
+    deliberate rather than convenient — it means the authorisation rules are
+    exercised by a second, independent client, so a rule that only worked
+    because one client happened to ask nicely is caught here.
+
+    Authentication is an access token held in memory and in sessionStorage,
+    which is cleared when the tab closes. Not localStorage: a staff laptop at a
+    Saturday session is a shared device, and a token that survives closing the
+    browser is a token the next person inherits.
+
+    The refresh token is never in JavaScript at all — the API sets it as an
+    HttpOnly cookie for browser clients, so a script on this page cannot read
+    it even if one were injected.
+*@
+
+<div id="signin" class="signin-shell">
+    <form class="card pad signin-card" id="signinForm" novalidate>
+        <div class="mark" style="margin-bottom:28px">
+            <b>THEE BUHLE</b><span>FOUNDATION</span>
+        </div>
+
+        <h1 class="d4">Staff console</h1>
+        <p class="quiet" style="margin:8px 0 26px">
+            Registers, learners, announcements and safeguarding. Sign in with your staff account.
+        </p>
+
+        <p class="notice" data-notice hidden></p>
+
+        <label class="f">
+            <span>Email address</span>
+            <input class="input" name="email" type="email" required autocomplete="username"
+                   placeholder="programmes@@theebuhlefoundation.co.za">
+            <span class="field-error" data-error-for="email"></span>
+        </label>
+
+        <label class="f" style="margin-top:16px">
+            <span>Password</span>
+            <input class="input" name="password" type="password" required autocomplete="current-password">
+            <span class="field-error" data-error-for="password"></span>
+        </label>
+
+        <button class="btn btn--forest btn--block" style="margin-top:22px" type="submit">Sign in</button>
+
+        <p class="dim" style="font-size:11.5px;margin:20px 0 0;line-height:1.6">
+            Five wrong attempts locks the account for fifteen minutes.
+            If you are locked out, phone the office rather than waiting.
+        </p>
+        <p style="font-size:13px;margin:12px 0 0">
+            New here, or forgot your password? <a href="/activate">Use the code the foundation gave you</a>.
+        </p>
+    </form>
+</div>
+
+<div id="console" hidden>
+    <header class="adminbar">
+        <div class="mark" style="align-items:flex-start">
+            <b style="font-size:17px">THEE BUHLE</b>
+            <span style="font-size:7px">STAFF CONSOLE</span>
+        </div>
+
+        <nav class="adminnav" id="adminNav" aria-label="Console sections">
+            <button class="tog" data-view="overview" aria-pressed="true">Overview</button>
+            <button class="tog" data-view="register" aria-pressed="false">Register</button>
+            <button class="tog" data-view="learners" aria-pressed="false">Learners</button>
+            <button class="tog" data-view="people" aria-pressed="false">People</button>
+            <button class="tog" data-view="announce" aria-pressed="false">Announcements</button>
+            <button class="tog" data-view="volunteers" aria-pressed="false">Volunteers</button>
+            <button class="tog" data-view="messages" aria-pressed="false">Enquiries</button>
+            <button class="tog" data-view="donations" aria-pressed="false">Donations</button>
+            @*
+                These two are hidden unless the signed-in role may reach them.
+                The API refuses them regardless — the authorisation tests assert
+                a 403 for programme staff on both — so hiding them is courtesy,
+                not security.
+            *@
+            <button class="tog" data-view="safeguarding" aria-pressed="false" data-requires="safeguarding" hidden>Safeguarding</button>
+            <button class="tog" data-view="audit" aria-pressed="false" data-requires="audit" hidden>Audit log</button>
+        </nav>
+
+        <div class="adminwho">
+            <span id="whoami" class="quiet"></span>
+            <button class="btn btn--ghost btn--s" id="signout">Sign out</button>
+        </div>
+    </header>
+
+    <p class="notice" id="globalNotice" hidden style="margin:20px 28px 0"></p>
+
+    <main id="views">
+        <section class="view" data-view="overview">
+            <h1 class="d3">Overview</h1>
+            <p class="quiet" style="margin:8px 0 28px">Where things stand this morning.</p>
+            <div id="overviewBody"><div class="skeleton" style="height:180px"></div></div>
+        </section>
+
+        <section class="view" data-view="register" hidden>
+            <h1 class="d3">Capture a register</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Choose a session, mark everybody, then save once. A register saves all-or-nothing —
+                a half-saved register is worse than an unsaved one, because you cannot tell what is missing.
+            </p>
+
+            <label class="f" style="max-width:520px">
+                <span>Session</span>
+                <select class="input" id="sessionPicker"><option value="">Loading sessions…</option></select>
+            </label>
+
+            <div id="registerBody" style="margin-top:26px"></div>
+        </section>
+
+        <section class="view" data-view="learners" hidden>
+            <h1 class="d3">Learners</h1>
+            <p class="quiet" style="margin:8px 0 22px">The learner roll. Every change is recorded in the audit log.</p>
+
+            <div class="row" style="margin-bottom:20px">
+                <label class="f" style="flex:1;max-width:340px">
+                    <span class="visually-hidden">Search learners</span>
+                    <input class="input" id="learnerSearch" type="search" placeholder="Search by name or reference code">
+                </label>
+                <label class="f">
+                    <span class="visually-hidden">Grade</span>
+                    <select class="input" id="learnerGrade">
+                        <option value="">All grades</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="learnersBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+
+        <section class="view" data-view="people" hidden>
+            <h1 class="d3">People and accounts</h1>
+            <p class="quiet" style="margin:8px 0 22px;max-width:78ch">
+                There is no public sign-up. Add a person here and they get a one-time code; they enter it in the
+                app (&ldquo;I have a code&rdquo;) or at <b>theebuhlefoundation.co.za/activate</b> and choose their own
+                password. A forgotten password works the same way: confirm who is asking, then issue a reset code.
+            </p>
+
+            @* Shown once after a code is issued. The code is never stored in
+               readable form, so this is the only time anybody sees it. *@
+            <div class="card card--gold pad" id="codePanel" hidden tabindex="-1" style="margin-bottom:24px;max-width:720px">
+                <h2 class="d5" id="codeTitle" style="margin:0 0 8px">Invitation ready</h2>
+                <p style="margin:0 0 6px">Code for <b id="codeEmail"></b>:</p>
+                <p class="num" id="codeValue" style="font-size:30px;font-weight:650;letter-spacing:.12em;margin:4px 0 8px"></p>
+                <p class="quiet" id="codeNote" style="margin:0 0 14px"></p>
+                <label class="f">
+                    <span>Message to send them (SMS or WhatsApp)</span>
+                    <textarea class="input" id="codeMessage" rows="4" readonly></textarea>
+                </label>
+                <div class="row" style="margin-top:12px;gap:10px">
+                    <button class="btn btn--forest btn--s" type="button" id="codeCopy">Copy message</button>
+                    <button class="btn btn--ghost btn--s" type="button" id="codeDone">Done, hide the code</button>
+                </div>
+                <p class="dim" style="margin:12px 0 0;font-size:12px">
+                    This is the only time the code is shown. If it is lost, issue a new one: the old one stops working.
+                </p>
+            </div>
+
+            <div class="grid people-grid">
+                <div>
+                    <div class="row" style="margin-bottom:16px;gap:10px">
+                        <label class="f" style="flex:1;max-width:320px">
+                            <span class="visually-hidden">Search people</span>
+                            <input class="input" id="peopleSearch" type="search" placeholder="Search by name, email or reference">
+                        </label>
+                        <label class="f">
+                            <span class="visually-hidden">Role</span>
+                            <select class="input" id="peopleRole">
+                                <option value="">Everyone</option>
+                                <option value="Parent">Parents</option>
+                                <option value="Learner">Learners</option>
+                                <option value="Mentor">Mentors</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Admin">Administrators</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div id="peopleBody"><div class="skeleton" style="height:200px"></div></div>
+                </div>
+
+                <form class="card pad" id="personForm" novalidate>
+                    <h2 class="d5" style="margin:0 0 14px">Add a person</h2>
+                    <p class="notice" data-notice hidden></p>
+
+                    <label class="f">
+                        <span>Who are you adding?</span>
+                        <select class="input" id="personKind">
+                            <option value="parents">Parent or guardian</option>
+                            <option value="learners">Learner</option>
+                            <option value="mentors">Mentor</option>
+                            <option value="staff" data-admin-only disabled>Staff member (administrators only)</option>
+                        </select>
+                    </label>
+
+                    <div class="grid g2" style="gap:14px;margin-top:14px">
+                        <label class="f">
+                            <span>First name</span>
+                            <input class="input" name="firstName" required maxlength="80" autocomplete="off">
+                            <span class="field-error" data-error-for="firstName"></span>
+                        </label>
+                        <label class="f">
+                            <span>Surname</span>
+                            <input class="input" name="surname" required maxlength="80" autocomplete="off">
+                            <span class="field-error" data-error-for="surname"></span>
+                        </label>
+                    </div>
+
+                    <label class="f" style="margin-top:14px">
+                        <span>Email address</span>
+                        <input class="input" name="email" type="email" maxlength="190" autocomplete="off">
+                        <span class="hint" data-for-kind="learners" hidden>Optional. Only for a learner old enough for their own login.</span>
+                        <span class="field-error" data-error-for="email"></span>
+                    </label>
+
+                    <div data-for-kind="parents">
+                        <div class="grid g2" style="gap:14px;margin-top:14px">
+                            <label class="f">
+                                <span>Mobile number</span>
+                                <input class="input" name="phone" type="tel" maxlength="30" autocomplete="off">
+                                <span class="field-error" data-error-for="phone"></span>
+                            </label>
+                            <label class="f">
+                                <span>Relationship</span>
+                                <select class="input" name="relationship">
+                                    <option value="mother">Mother</option>
+                                    <option value="father">Father</option>
+                                    <option value="grandparent">Grandparent</option>
+                                    <option value="guardian" selected>Guardian</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </label>
+                        </div>
+                        <fieldset style="margin-top:14px">
+                            <legend>Their child or children</legend>
+                            <input class="input" id="childSearch" type="search" placeholder="Filter learners" aria-label="Filter learners" style="margin-bottom:8px">
+                            <div id="childList" tabindex="0" role="group" aria-label="Learners" style="max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px 12px"></div>
+                            <span class="field-error" data-error-for="learnerIds"></span>
+                        </fieldset>
+                    </div>
+
+                    <div data-for-kind="learners" hidden>
+                        <div class="grid g2" style="gap:14px;margin-top:14px">
+                            <label class="f">
+                                <span>Date of birth</span>
+                                <input class="input" name="dateOfBirth" type="date">
+                                <span class="field-error" data-error-for="dateOfBirth"></span>
+                            </label>
+                            <label class="f">
+                                <span>Grade</span>
+                                <select class="input" name="grade" id="gradeSelect"></select>
+                                <span class="field-error" data-error-for="grade"></span>
+                            </label>
+                            <label class="f">
+                                <span>School</span>
+                                <input class="input" name="school" maxlength="120" autocomplete="off">
+                            </label>
+                            <label class="f">
+                                <span>Suburb</span>
+                                <input class="input" name="suburb" maxlength="80" autocomplete="off">
+                            </label>
+                        </div>
+                        <label class="f" style="margin-top:14px">
+                            <span>Enrol in</span>
+                            <select class="input" name="programmeId" id="programmeSelect"></select>
+                            <span class="hint">Enrolled for this term, so they appear on registers.</span>
+                        </label>
+                    </div>
+
+                    <div data-for-kind="mentors" hidden>
+                        <div class="grid g2" style="gap:14px;margin-top:14px">
+                            <label class="f">
+                                <span>Occupation</span>
+                                <input class="input" name="occupation" maxlength="120" autocomplete="off">
+                            </label>
+                            <label class="f">
+                                <span>Police clearance valid until</span>
+                                <input class="input" name="clearedUntil" type="date">
+                                <span class="hint">Leave empty while screening is still in progress.</span>
+                                <span class="field-error" data-error-for="clearedUntil"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div data-for-kind="staff" hidden>
+                        <label class="f" style="margin-top:14px">
+                            <span>Job title</span>
+                            <input class="input" name="jobTitle" maxlength="120" autocomplete="off">
+                            <span class="field-error" data-error-for="jobTitle"></span>
+                        </label>
+                        <label class="check" style="margin-top:12px">
+                            <input type="checkbox" name="isSafeguardingLead">
+                            <span>Designated safeguarding lead (only one person can be)</span>
+                        </label>
+                        <label class="check" style="margin-top:8px">
+                            <input type="checkbox" name="isAdministrator">
+                            <span>Administrator (can add staff and read the audit log)</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn--forest" style="margin-top:20px" type="submit">Add and create a code</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="view" data-view="announce" hidden>
+            <h1 class="d3">Publish an announcement</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Goes to every parent, learner or mentor in the audience you choose, through whichever channel
+                each of them has asked for.
+            </p>
+
+            <form class="card pad" id="announceForm" style="max-width:720px" novalidate>
+                <p class="notice" data-notice hidden></p>
+
+                <label class="f">
+                    <span>Title</span>
+                    <input class="input" name="title" type="text" required maxlength="200"
+                           placeholder="Term 3 sessions move to Room B">
+                    <span class="field-error" data-error-for="title"></span>
+                </label>
+
+                <label class="f" style="margin-top:16px">
+                    <span>Message</span>
+                    <textarea class="input" name="bodyHtml" rows="6" required
+                              placeholder="Same time, same building — just one floor up. Starts this Saturday."></textarea>
+                    <span class="hint">
+                        Basic formatting is allowed: bold, italic, lists, links. Anything else is stripped when
+                        it is saved, so a pasted document cannot carry script into the parent app.
+                    </span>
+                    <span class="field-error" data-error-for="bodyHtml"></span>
+                </label>
+
+                <div class="grid g2" style="gap:16px;margin-top:16px">
+                    <label class="f">
+                        <span>Category</span>
+                        <select class="input" name="category">
+                            <option value="General">General</option>
+                            <option value="ProgrammeUpdate">Programme update</option>
+                            <option value="Event">Event</option>
+                            <option value="Safeguarding">Safeguarding</option>
+                        </select>
+                        <span class="field-error" data-error-for="category"></span>
+                    </label>
+                    <label class="f">
+                        <span>Audience</span>
+                        <select class="input" name="audience">
+                            <option value="Parents">Parents and guardians</option>
+                            <option value="All">Everybody</option>
+                            <option value="Learners">Learners</option>
+                            <option value="Mentors">Mentors</option>
+                            <option value="Staff">Staff only</option>
+                        </select>
+                        <span class="field-error" data-error-for="audience"></span>
+                    </label>
+                </div>
+
+                <label class="check" style="margin-top:16px">
+                    <input type="checkbox" name="actionRequired" id="actionRequired">
+                    <span>Parents need to do something about this (adds a deadline and marks it urgent)</span>
+                </label>
+
+                <label class="f" style="margin-top:14px" id="dueDateField" hidden>
+                    <span>Respond by</span>
+                    <input class="input" name="dueDate" type="date">
+                    <span class="field-error" data-error-for="dueDate"></span>
+                </label>
+
+                <button class="btn btn--forest" style="margin-top:22px" type="submit">Publish</button>
+            </form>
+        </section>
+
+        <section class="view" data-view="volunteers" hidden>
+            <h1 class="d3">Volunteer applications</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Screening queue. A mentor cannot be assigned to a learner until their clearance is recorded
+                as current.
+            </p>
+            <div id="volunteersBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+
+        <section class="view" data-view="messages" hidden>
+            <h1 class="d3">Website enquiries</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Messages from the contact form. Reported concerns are listed first and also go directly to the
+                safeguarding lead by email.
+            </p>
+            <div id="messagesBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+
+        <section class="view" data-view="donations" hidden>
+            <h1 class="d3">Donations</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Completed gifts only in the totals — a donor who abandoned checkout never appears in a
+                published figure.
+            </p>
+            <div id="donationsBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+
+        <section class="view" data-view="safeguarding" hidden>
+            <h1 class="d3">Safeguarding queue</h1>
+            <div class="notice notice--warn" style="margin:14px 0 22px;max-width:760px">
+                <span aria-hidden="true">🛡</span>
+                <div>
+                    <b>Visible to the designated safeguarding lead only.</b>
+                    These notes are not visible to the parent, the learner, or the mentor who raised them.
+                    If a child is in immediate danger, call 10111 first.
+                </div>
+            </div>
+            <div id="safeguardingBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+
+        <section class="view" data-view="audit" hidden>
+            <h1 class="d3">Audit log</h1>
+            <p class="quiet" style="margin:8px 0 22px">
+                Every change to a learner record, a consent decision, an account or a donation. This log
+                cannot be edited or deleted by anybody, including an administrator — the database refuses the
+                statement.
+            </p>
+            <div id="auditBody"><div class="skeleton" style="height:200px"></div></div>
+        </section>
+    </main>
+</div>
+
+@*
+    No inline script. The API base is an attribute on the script tag, read by
+    api.js itself — the policy this application sends is script-src 'self' with
+    no 'unsafe-inline', so an inline assignment here would be blocked by the
+    browser and the console would silently call the wrong host.
+*@
+<script src="~/assets/js/api.js" data-api-base="/api" asp-append-version="true"></script>
+<script src="~/assets/js/admin.js" asp-append-version="true"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\TheeBuhle.Application\TheeBuhle.Application.csproj" />
+    <ProjectReference Include="..\TheeBuhle.Infrastructure\TheeBuhle.Infrastructure.csproj" />
+    <ProjectReference Include="..\TheeBuhle.Domain\TheeBuhle.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- The XML docs feed the OpenAPI document: the <summary> on a controller
+         action becomes the endpoint's description in Swagger, so the API
+         reference is generated from the same comments a developer reads in the
+         code rather than written twice and allowed to diverge. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- CS1591 Undocumented public member. Not promoted to an error: a
+         controller action's route and parameters are self-describing, and
+         requiring a docblock on every one of them produces ceremony rather than
+         information. The actions worth explaining are explained.
+
+         CS1573 A documented method with an undocumented parameter. Every action
+         takes a CancellationToken, which is plumbing — documenting it on all of
+         them would mean the interesting <param> tags are buried in forty copies
+         of "the cancellation token". -->
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>c6217b3e-1f46-4455-8167-4cba35d93be3</UserSecretsId>
+  </PropertyGroup>
+
+  <!--
+    Development settings hold the development-only signing keys and PayFast's
+    sandbox credentials. Production never loads the file, but it should not be
+    on the server either.
+  -->
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+</Project>

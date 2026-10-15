@@ -1,0 +1,105 @@
+@page "/news"
+@model NewsModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › News &amp; blog</p>
+    <h1 class="d2">From the ground</h1>
+    <p class="lede">
+        Programme updates, success stories, community initiatives, announcements and press coverage —
+        written by the people doing the work.
+    </p>
+</header>
+
+@*
+    Links rather than buttons. Each filter is a real page with its own URL, so
+    it can be shared, bookmarked and crawled — and works with scripting off.
+*@
+<nav class="filterbar" aria-label="Filter by category">
+    <div class="chipset">
+        <a class="tog" href="/news" style="text-decoration:none"
+           aria-current="@(Model.CategorySlug is null ? "page" : null)">All posts</a>
+        @foreach (var (slug, _, label) in NewsModel.Categories)
+        {
+            var current = string.Equals(Model.CategorySlug, slug, StringComparison.Ordinal);
+
+            <a class="tog" href="/news?category=@slug" style="text-decoration:none"
+               aria-current="@(current ? "page" : null)">@label</a>
+        }
+    </div>
+    <span class="dim spread" style="font-size:12.5px">
+        @Model.Total @(Model.Total == 1 ? "article" : "articles")
+    </span>
+</nav>
+
+@if (Model.Featured is { } featured)
+{
+    <section class="band band--cream band--tight">
+        <div class="grid split" style="grid-template-columns:620px 1fr;gap:56px;align-items:center">
+            <div class="ph" style="height:420px;background:linear-gradient(150deg,#2E4034,#8B7A55)">Photo · Featured article</div>
+            <div>
+                <div class="row" style="gap:10px">
+                    <span class="chip chip--gold">FEATURED</span>
+                    <span class="alabel" style="margin:0">
+                        @NewsModel.LabelFor(featured.Category) ·
+                        @featured.PublishedAt.ToString("d MMM yyyy") ·
+                        @featured.ReadMinutes min read
+                    </span>
+                </div>
+                <h2 class="d3" style="margin-top:18px">
+                    <a href="/news/@featured.Slug" style="text-decoration:none">@featured.Title</a>
+                </h2>
+                <p class="lede" style="margin-top:16px">@featured.Excerpt</p>
+                <div class="row" style="gap:12px;margin-top:26px">
+                    <div class="ph" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#A87C32,#C2A870)"></div>
+                    <div>
+                        <b style="font-size:13px">@featured.AuthorName</b>
+                        <p class="dim" style="margin:0;font-size:11px">Thee Buhle Foundation</p>
+                    </div>
+                </div>
+                <a class="btn btn--forest" style="margin-top:26px" href="/news/@featured.Slug">Read the full story</a>
+            </div>
+        </div>
+    </section>
+}
+
+<section class="band band--white">
+    @if (Model.Posts.Count == 0)
+    {
+        <div class="notice notice--info">
+            <span aria-hidden="true">📄</span>
+            <div>
+                <b>Nothing published in this category yet.</b>
+                <a href="/news">See all articles</a> instead.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid g3">
+            <partial name="_NewsCards" model="Model.Posts" />
+        </div>
+    }
+
+    @if (Model.PageCount > 1)
+    {
+        <nav class="chipset" style="justify-content:center;margin-top:44px;gap:8px" aria-label="Pagination">
+            @if (Model.PageNumber > 1)
+            {
+                <a class="tog" href="@Model.LinkFor(Model.PageNumber - 1)" rel="prev"
+                   style="text-decoration:none" aria-label="Previous page">‹</a>
+            }
+
+            @for (var number = 1; number <= Model.PageCount; number++)
+            {
+                <a class="tog" href="@Model.LinkFor(number)" style="text-decoration:none"
+                   aria-current="@(number == Model.PageNumber ? "page" : null)">@number</a>
+            }
+
+            @if (Model.PageNumber < Model.PageCount)
+            {
+                <a class="tog" href="@Model.LinkFor(Model.PageNumber + 1)" rel="next"
+                   style="text-decoration:none" aria-label="Next page">›</a>
+            }
+        </nav>
+    }
+</section>

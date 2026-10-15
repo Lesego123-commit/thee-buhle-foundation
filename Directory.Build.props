@@ -1,0 +1,69 @@
+<Project>
+
+  <!--
+    Build settings shared by every project in the solution.
+
+    Two of these are worth calling out because they change what the compiler
+    will let through rather than merely tidying output:
+
+      Nullable                  Reference types are non-nullable unless declared
+                                otherwise. A `Learner?` and a `Learner` are
+                                different types, so "did I check for null?" stops
+                                being a question the reviewer has to answer by
+                                reading.
+
+      TreatWarningsAsErrors     A warning nobody reads is not a warning. This
+                                makes an unused variable, an unawaited task or a
+                                nullability violation fail the build — and it
+                                fails the same way in CI, so nothing merges with
+                                a warning in it.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!-- An await that was forgotten is a bug that shows up as "the badge was
+         sometimes not awarded". Promoted from a warning so it cannot ship. -->
+    <WarningsAsErrors>CS4014;CS8600;CS8602;CS8603;CS8604;CS8618</WarningsAsErrors>
+
+    <!-- =====================================================================
+         Source files are UTF-8.
+
+         This is NOT a formality. Roslyn detects UTF-8 only from a byte-order
+         mark; without one it falls back to the machine's ANSI codepage, which
+         on a South African Windows install is Windows-1252. Every em dash,
+         ellipsis and middle dot in a string literal is then read as two or
+         three Latin-1 characters and compiled that way.
+
+         The symptom is not a build error. It is a live API response reading
+         "no longer visible to you â€" including in your own history", which is
+         what a parent or a mentor would actually have seen. Found by calling
+         the endpoint, not by reading the code.
+
+         65001 is UTF-8. One property, and it makes the build independent of
+         whichever locale the machine happens to have — which also means CI and
+         a developer's laptop produce identical output.
+         ===================================================================== -->
+    <CodePage>65001</CodePage>
+
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <!-- The client and every user is in South Africa. Pinning the culture means
+         a date or a rand amount formats the same on a developer's machine, in
+         CI and on Azure, rather than following whatever locale the host has. -->
+    <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
+
+    <Company>Thee Buhle Foundation</Company>
+    <Product>Thee Buhle Foundation Platform</Product>
+    <Authors>INSY7315 WIL Group</Authors>
+  </PropertyGroup>
+
+</Project>

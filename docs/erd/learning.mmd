@@ -1,0 +1,96 @@
+erDiagram
+    badges ||--o{ learner_badges : "badge_id"
+    learners ||--o{ assessment_results : "learner_id"
+    learners ||--o{ buddy_requests : "requester_id"
+    learners ||--o{ buddy_requests : "recipient_id"
+    learners ||--o{ group_memberships : "learner_id"
+    learners ||--o{ learner_badges : "learner_id"
+    learners ||--o| learner_summaries : "learner_id"
+    learners ||--o{ resource_progress : "learner_id"
+    peer_groups ||--o{ group_memberships : "group_id"
+    resources ||--o{ resource_progress : "resource_id"
+    subjects ||--o{ assessment_results : "subject_id"
+    subjects |o--o{ peer_groups : "subject_id"
+    subjects ||--o{ resources : "subject_id"
+    venues |o--o{ peer_groups : "venue_id"
+    assessment_results {
+        uniqueidentifier id PK
+        uniqueidentifier learner_id FK,UK
+        uniqueidentifier subject_id FK,UK
+        nvarchar term UK
+        decimal mark
+        nvarchar source UK
+        uniqueidentifier captured_by FK
+    }
+    badges {
+        uniqueidentifier id PK
+        nvarchar code UK
+        nvarchar name
+        nvarchar description
+        nvarchar icon
+        nvarchar criteria
+        int threshold
+        int points
+        bit is_active
+    }
+    buddy_requests {
+        uniqueidentifier id PK
+        uniqueidentifier requester_id FK,UK
+        uniqueidentifier recipient_id FK,UK
+        nvarchar status
+        uniqueidentifier approved_by FK
+        datetimeoffset decided_at
+    }
+    group_memberships {
+        uniqueidentifier group_id PK,FK
+        uniqueidentifier learner_id PK,FK
+        nvarchar status
+        datetimeoffset joined_at
+    }
+    learner_badges {
+        uniqueidentifier learner_id PK,FK
+        uniqueidentifier badge_id PK,FK
+        datetimeoffset awarded_at
+    }
+    learner_summaries {
+        uniqueidentifier learner_id PK,FK
+        int sessions_recorded
+        int sessions_attended
+        int sessions_late
+        int attendance_rate
+        datetimeoffset refreshed_at
+    }
+    peer_groups {
+        uniqueidentifier id PK
+        nvarchar name
+        uniqueidentifier subject_id FK
+        uniqueidentifier venue_id FK
+        nvarchar meets_at
+        nvarchar location
+        uniqueidentifier approved_by FK
+    }
+    resource_progress {
+        uniqueidentifier learner_id PK,FK
+        uniqueidentifier resource_id PK,FK
+        int percent_complete
+        datetimeoffset last_opened_at
+    }
+    resources {
+        uniqueidentifier id PK
+        uniqueidentifier subject_id FK
+        nvarchar title
+        nvarchar topic
+        nvarchar type
+        int grade
+        nvarchar storage_path
+        bigint size_bytes
+        int duration_minutes
+        datetimeoffset published_at
+    }
+    subjects {
+        uniqueidentifier id PK
+        nvarchar name UK
+        int grade UK
+        nvarchar icon
+        nvarchar accent
+    }

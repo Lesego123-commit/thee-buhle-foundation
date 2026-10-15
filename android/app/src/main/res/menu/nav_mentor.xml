@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A mentor's tabs, which are not a subset of a learner's. A mentor has no
+    Learn tab and no Progress tab of their own; they have the learners assigned
+    to them, and the alerts about those learners.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/homeFragment" android:icon="@drawable/ic_home" android:title="@string/nav_home" />
+    <item android:id="@+id/menteesFragment" android:icon="@drawable/ic_mentees" android:title="@string/nav_mentees" />
+    <item android:id="@+id/notificationsFragment" android:icon="@drawable/ic_alerts" android:title="@string/nav_alerts" />
+    <item android:id="@+id/messagesFragment" android:icon="@drawable/ic_messages" android:title="@string/nav_messages" />
+</menu>

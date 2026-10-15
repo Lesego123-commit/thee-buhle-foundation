@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.TheeBuhle" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/forest</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/gold</item>
+        <item name="android:statusBarColor">@color/ink</item>
+        <item name="android:navigationBarColor">@color/cream</item>
+        <item name="android:windowBackground">@color/cream</item>
+
+        <!--
+            Chips carry most of this app's input: wellbeing, support areas,
+            resource types, which child a parent is looking at. Left to
+            Material's default they select in lilac, which is the one colour
+            nowhere in the foundation's palette.
+        -->
+        <item name="chipStyle">@style/TheeBuhle.Chip</item>
+    </style>
+
+    <style name="TheeBuhle.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_background</item>
+        <item name="android:textColor">@color/chip_text</item>
+        <item name="chipStrokeColor">@color/chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipCornerRadius">2dp</item>
+        <item name="checkedIconEnabled">false</item>
+        <item name="chipIconVisible">false</item>
+    </style>
+
+    <!-- The selected-tab pill, in the Heritage mist rather than the Material default. -->
+    <style name="TheeBuhle.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/mist</item>
+    </style>
+
+    <!--
+        The base every TheeBuhle.* text style inherits from. Android resolves a
+        dotted style name to a parent of the same name, so this must exist even
+        though it is empty — without it, "TheeBuhle.Display" fails to link.
+    -->
+    <style name="TheeBuhle" />
+
+    <!-- Section heading, Cormorant-flavoured: large, light, generous. -->
+    <style name="TheeBuhle.Display">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TheeBuhle.Eyebrow">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/gold</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="TheeBuhle.Body">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:lineSpacingMultiplier">1.35</item>
+    </style>
+
+    <style name="TheeBuhle.Quiet">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/ink_40</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+    </style>
+
+    <style name="TheeBuhle.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="cardCornerRadius">2dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/line</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="TheeBuhle.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/forest</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <style name="TheeBuhle.Button.Ghost" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">2dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/forest</item>
+        <item name="strokeColor">@color/line</item>
+    </style>
+
+    <style name="TheeBuhle.Input" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">2dp</item>
+        <item name="boxCornerRadiusTopEnd">2dp</item>
+        <item name="boxCornerRadiusBottomStart">2dp</item>
+        <item name="boxCornerRadiusBottomEnd">2dp</item>
+        <item name="boxStrokeColor">@color/forest</item>
+    </style>
+
+    <!--
+        Inputs on the sign-in and activation screens. Filled rather than
+        outlined: an outlined box floats its label onto the border, where dark
+        label text sat half on the near-black screen and could not be read.
+        Filled keeps the label inside the white box. The fields sit on the
+        cream @drawable/form_panel, so error messages below them are on a
+        light surface too.
+    -->
+    <style name="TheeBuhle.Input.OnDark" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="boxCornerRadiusTopStart">2dp</item>
+        <item name="boxCornerRadiusTopEnd">2dp</item>
+        <item name="boxCornerRadiusBottomStart">2dp</item>
+        <item name="boxCornerRadiusBottomEnd">2dp</item>
+        <item name="boxStrokeColor">@color/forest</item>
+        <item name="hintTextColor">@color/forest</item>
+    </style>
+</resources>

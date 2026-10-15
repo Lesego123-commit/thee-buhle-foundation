@@ -1,0 +1,109 @@
+@page "/programmes"
+@model ProgrammesModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Programmes</p>
+    <h1 class="d2" style="max-width:18ch">Four programmes, one continuous line of support</h1>
+    <p class="lede">
+        From a Grade 8 learner who needs a quiet place to work through to a matriculant filling in a
+        bursary form — our programmes are designed to hand a child on, not hand them off.
+    </p>
+</header>
+
+<nav class="filterbar" aria-label="Jump to a programme">
+    <span class="alabel" style="margin:0">Jump to</span>
+    <div class="chipset">
+        @foreach (var programme in Model.Programmes)
+        {
+            <a class="tog" href="#@programme.Slug" style="text-decoration:none">@programme.Name</a>
+        }
+    </div>
+    <span class="spread" style="font-size:12px;font-weight:600;color:var(--gold)">All programmes are free to learners.</span>
+</nav>
+
+@for (var i = 0; i < Model.Programmes.Count; i++)
+{
+    var programme = Model.Programmes[i];
+
+    @* Alternating, so four full-width sections do not read as one long column. *@
+    var imageFirst = i % 2 == 0;
+    var columns = imageFirst ? "480px 1fr" : "1fr 480px";
+
+    <section class="band @(imageFirst ? "band--cream" : "band--white")" id="@programme.Slug">
+        <div class="grid split alt" style="grid-template-columns:@columns;gap:64px;align-items:start">
+
+            @if (imageFirst)
+            {
+                <div class="imgside">
+                    <div class="ph" style="height:420px;background:@IndexModel.GradientFor(i)">Photo · @programme.Name</div>
+                    <p class="dim" style="font-size:11px;margin:12px 0 0">Sebokeng centre · placeholder image</p>
+                </div>
+            }
+
+            <div>
+                <div class="row" style="margin-bottom:14px">
+                    <span style="font-family:var(--display);font-size:22px;font-weight:600;color:var(--gold)">@programme.Number</span>
+                    @if (!string.IsNullOrWhiteSpace(programme.Audience))
+                    {
+                        <span class="chip chip--gold">@programme.Audience</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(programme.CapacityNote))
+                    {
+                        <span class="chip chip--mist">@programme.CapacityNote</span>
+                    }
+                    <span class="chip">Grades @programme.MinGrade–@programme.MaxGrade</span>
+                </div>
+
+                <h2 class="d3" style="font-size:clamp(26px,3vw,40px)">@programme.Name</h2>
+                <p class="lede" style="margin-top:16px">@programme.Description</p>
+
+                @if (programme.Expectations.Count > 0)
+                {
+                    <p class="alabel" style="margin:28px 0 14px">What participants can expect</p>
+                    <ul style="margin:0 0 24px;padding-left:18px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.55">
+                        @foreach (var expectation in programme.Expectations)
+                        {
+                            <li>@expectation</li>
+                        }
+                    </ul>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(programme.HowToJoin))
+                {
+                    <div style="background:@(imageFirst ? "var(--white)" : "var(--cream)");padding:18px 20px;font-size:14px;line-height:1.6">
+                        <b>How to get involved: </b>@programme.HowToJoin
+                    </div>
+                }
+
+                <div class="row" style="margin-top:26px">
+                    <a class="btn btn--forest" href="/contact?topic=enrol">@(programme.CtaLabel ?? "Register a learner")</a>
+                    <a class="btn btn--ghost" href="/contact">Ask us a question</a>
+                </div>
+            </div>
+
+            @if (!imageFirst)
+            {
+                <div class="imgside">
+                    <div class="ph" style="height:420px;background:@IndexModel.GradientFor(i)">Photo · @programme.Name</div>
+                    <p class="dim" style="font-size:11px;margin:12px 0 0">Sebokeng centre · placeholder image</p>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<section class="band band--forest">
+    <div class="row" style="gap:48px">
+        <div style="flex:1;min-width:300px">
+            <h2 class="d4" style="color:#fff">Not sure which programme fits your child?</h2>
+            <p class="lede" style="margin-top:10px">
+                Send us one message with your child&rsquo;s grade and what they are struggling with.
+                We will call you back within two working days.
+            </p>
+        </div>
+        <div class="row">
+            <a class="btn btn--light" href="/contact?topic=enrol">Talk to us</a>
+            <a class="btn btn--ghostL" href="/volunteer">Volunteer instead</a>
+        </div>
+    </div>
+</section>

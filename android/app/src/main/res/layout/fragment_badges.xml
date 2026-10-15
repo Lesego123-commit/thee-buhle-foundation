@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/stateHost"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream">
+
+    <ScrollView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/forest"
+                android:orientation="vertical"
+                android:paddingHorizontal="22dp"
+                android:paddingTop="26dp"
+                android:paddingBottom="24dp">
+
+                <TextView
+                    android:id="@+id/milestoneName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="serif"
+                    android:textColor="@color/cream"
+                    android:textSize="28sp"
+                    tools:text="Rising" />
+
+                <TextView
+                    android:id="@+id/milestonePoints"
+                    style="@style/TheeBuhle.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/gold_soft"
+                    tools:text="180 points · 70 to the next level" />
+
+                <ProgressBar
+                    android:id="@+id/milestoneProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="7dp"
+                    android:layout_marginTop="14dp"
+                    android:max="100"
+                    android:progressBackgroundTint="#3F5244"
+                    android:progressTint="@color/gold_soft"
+                    tools:progress="72" />
+
+                <TextView
+                    android:id="@+id/nextBadge"
+                    style="@style/TheeBuhle.Quiet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:textColor="#C9C2B4"
+                    tools:text="Next: Full House — 2 to go" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="18dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="28dp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <include layout="@layout/view_state" />
+</FrameLayout>

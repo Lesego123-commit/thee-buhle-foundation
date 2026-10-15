@@ -1,0 +1,98 @@
+# =============================================================================
+#  Secret-scanning configuration.
+#
+#  The default rules are used in full — this file only adds allow-list entries,
+#  and each one names exactly what it permits and why.
+#
+#  A note on the principle: an allow-list entry is a promise that the matched
+#  value is not a credential for anything real. Every entry below is either a
+#  development placeholder that signs nothing, or a credential the vendor
+#  publishes in their own documentation. Nothing here is broad — no "ignore this
+#  whole directory", no "ignore anything that looks like a key" — because a
+#  broad entry is how a real secret gets committed past a scanner that is
+#  nominally enabled.
+# =============================================================================
+
+[extend]
+useDefault = true
+
+# -----------------------------------------------------------------------------
+#  Development-only keys.
+#
+#  appsettings.Development.json carries a JWT signing key and an HMAC signing
+#  key. They are committed on purpose, so that `dotnet run` and the integration
+#  tests work on a fresh clone without anybody being handed a secret — and they
+#  are only ever loaded when ASPNETCORE_ENVIRONMENT is Development.
+#
+#  They sign nothing that matters. Production reads its own values from Azure
+#  App Service application settings, which override the file entirely, so there
+#  is no code path by which these reach a deployed environment.
+#
+#  Scoped to the two specific key strings rather than to the file, so a real
+#  credential pasted into that file anywhere else is still caught.
+# -----------------------------------------------------------------------------
+[[allowlist]]
+description = "Development-only signing keys in appsettings.Development.json — they sign nothing and are overridden in production"
+paths = ['''src/TheeBuhle\.Api/appsettings\.Development\.json''']
+regexes = [
+  '''development-only-signing-key-not-for-production-use-at-all''',
+  '''development-only-hmac-key-different-from-the-jwt-one-on-purpose''',
+]
+
+# -----------------------------------------------------------------------------
+#  PayFast's published sandbox credentials.
+#
+#  These are in PayFast's own public documentation, are shared by every
+#  integrator testing against their sandbox, and are useless against a real
+#  merchant account. Committing them means the donation flow can be exercised
+#  end to end without a real merchant key.
+#
+#  The production merchant key and passphrase are NOT here and never should be.
+#  They are Azure application settings, and the passphrase in particular is what
+#  makes a payment callback signature unforgeable — so leaking it is leaking the
+#  ability to mint donations.
+# -----------------------------------------------------------------------------
+[[allowlist]]
+description = "PayFast's publicly documented sandbox merchant credentials"
+paths = ['''src/TheeBuhle\.Api/appsettings\.Development\.json''']
+regexes = [
+  '''46f0cd694581a''',
+  '''jt7NOE43FZPn''',
+  '''10000100''',
+]
+
+# -----------------------------------------------------------------------------
+#  The CI-only SQL Server password.
+#
+#  Belongs to a container that exists for the length of one workflow run and is
+#  reachable only from that job's own network. Putting it in a repository secret
+#  would imply it protects something, which it does not — and would make the
+#  workflow harder to read for no gain.
+# -----------------------------------------------------------------------------
+[[allowlist]]
+description = "Throwaway SQL Server password for the CI service container"
+paths = ['''\.github/workflows/.*\.yml''']
+regexes = ['''CiOnly-Pa55w0rd!''']
+
+# -----------------------------------------------------------------------------
+#  The seeded demonstration password.
+#
+#  One known password shared by the seeded demonstration accounts, so a marker
+#  or the client can sign in as each role without being handed a list. It is
+#  only ever set by the seeder, which runs in Development.
+# -----------------------------------------------------------------------------
+[[allowlist]]
+description = "The seeded demonstration account password, set only by the development seeder"
+regexes = ['''Vanderbijlpark2026!''']
+
+# -----------------------------------------------------------------------------
+#  The design-time placeholder connection string.
+#
+#  Deliberately unreachable — "(design-time-no-connection)" is not a host — so
+#  that `dotnet ef migrations add` works with no configuration while
+#  `database update` without configuration fails immediately and obviously
+#  rather than touching whatever database happens to be on the machine.
+# -----------------------------------------------------------------------------
+[[allowlist]]
+description = "Design-time placeholder connection string with no real host"
+regexes = ['''Server=\(design-time-no-connection\)''']

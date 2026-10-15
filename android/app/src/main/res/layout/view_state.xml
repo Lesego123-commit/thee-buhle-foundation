@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Loading, failure and empty, in one include that every screen uses.
+
+    Shared so that "no connection" looks and reads the same everywhere, and so
+    a screen cannot accidentally ship without an empty state — the commonest
+    way a list screen looks broken when it is merely empty.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="android.widget.FrameLayout">
+
+    <ProgressBar
+        android:id="@+id/stateLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/forest"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/stateMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="36dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/stateTitle"
+            style="@style/TheeBuhle.Display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="21sp"
+            tools:text="No connection" />
+
+        <TextView
+            android:id="@+id/stateBody"
+            style="@style/TheeBuhle.Quiet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            tools:text="Check your connection and try again." />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stateRetry"
+            style="@style/TheeBuhle.Button.Ghost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/retry" />
+    </LinearLayout>
+</merge>

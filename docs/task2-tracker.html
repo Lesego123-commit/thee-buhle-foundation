@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="What is built, what works, what is broken and what is left for the Thee Buhle Foundation Task 2 project.">
+<meta name="robots" content="noindex">
+<title>Thee Buhle Task 2 Tracker</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #FAF6EE;
+  --surface: #FFFFFF;
+  --ink: #17150F;
+  --ink-2: #4A463D;
+  --ink-3: #6D685E;
+  --line: #E2D9C8;
+  --forest: #2E4034;
+  --gold: #856228;
+  --done-bg: #E3EBDF; --done-fg: #2B4A2F;
+  --part-bg: #F3E7CC; --part-fg: #6B4F1E;
+  --todo-bg: #F2DDD6; --todo-fg: #7A3526;
+  --display: "Cormorant Garamond", Baskerville, "Iowan Old Style", Georgia, serif;
+  --body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #15130F; --surface: #1D1B16; --ink: #F1EBDF; --ink-2: #CFC7B8; --ink-3: #A39B8C;
+    --line: #36322A; --forest: #A9C2AE; --gold: #D6B274;
+    --done-bg: #243528; --done-fg: #B9D6BE; --part-bg: #3A2F1B; --part-fg: #E6C98F;
+    --todo-bg: #3D231D; --todo-fg: #F0B4A4;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #15130F; --surface: #1D1B16; --ink: #F1EBDF; --ink-2: #CFC7B8; --ink-3: #A39B8C;
+  --line: #36322A; --forest: #A9C2AE; --gold: #D6B274;
+  --done-bg: #243528; --done-fg: #B9D6BE; --part-bg: #3A2F1B; --part-fg: #E6C98F;
+  --todo-bg: #3D231D; --todo-fg: #F0B4A4;
+}
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; margin: 0; }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 48px 72px; }
+h1, h2 { font-family: var(--display); font-weight: 600; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 50px); }
+h2 { font-size: 30px; margin-bottom: 6px; }
+h3 { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.lede { color: var(--ink-2); max-width: 64ch; margin-top: 14px; }
+section { margin-top: 56px; display: grid; gap: 16px; }
+.sub { color: var(--ink-3); font-size: 14px; max-width: 64ch; }
+
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+.tally div { display: flex; align-items: baseline; gap: 8px; }
+.tally b { font-family: var(--display); font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tally span { color: var(--ink-3); font-size: 13.5px; }
+
+.pill { display: inline-block; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.done { background: var(--done-bg); color: var(--done-fg); }
+.part { background: var(--part-bg); color: var(--part-fg); }
+.todo { background: var(--todo-bg); color: var(--todo-fg); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 680px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+td.num { font-variant-numeric: tabular-nums; color: var(--ink-3); white-space: nowrap; }
+td.crit { font-weight: 600; white-space: nowrap; }
+td .left { color: var(--ink-3); display: block; margin-top: 4px; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px 36px; }
+ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+li { color: var(--ink-2); }
+li b { color: var(--ink); font-weight: 600; }
+
+.todo-list { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.todo-item { display: grid; grid-template-columns: 110px 1fr; gap: 6px 18px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.todo-item:last-child { border-bottom: 0; }
+.owner { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); padding-top: 2px; }
+.todo-item p { color: var(--ink-2); }
+.todo-item p b { color: var(--ink); }
+@media (max-width: 520px) { .todo-item { grid-template-columns: 1fr; } }
+
+.issue { padding: 14px 16px; border-left: 3px solid var(--todo-fg); background: var(--surface); border-radius: 0 8px 8px 0; }
+.issue.minor { border-left-color: var(--part-fg); }
+.issue p { color: var(--ink-2); font-size: 14px; }
+.issues { display: grid; gap: 10px; }
+code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px; background: var(--ground); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; }
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">INSY7315 · Thee Buhle Foundation · Task 2</p>
+    <h1>Where Task 2 stands</h1>
+    <p class="lede">Status as of 22 September 2026. The site is <b>live on the client's own domain</b>, <a href="https://www.theebuhlefoundation.co.za">www.theebuhlefoundation.co.za</a>, with HTTPS. <b>Use the www. address for now</b>: the plain one works too, but some networks still have the old address saved and show Afrihost’s placeholder page until that expires. Demo data is loaded for the presentation, and the Android app works against it. What's left is mostly GitHub and the CI/CD pipeline.</p>
+    <div class="tally">
+      <div><b>10</b><span>of 12 code criteria done</span></div>
+      <div><b>2</b><span>need the GitHub repo</span></div>
+      <div><b>357</b><span>automated tests, all passing</span></div>
+    </div>
+  </header>
+
+  <section aria-labelledby="rubric">
+    <div>
+      <h2 id="rubric">Code rubric: 210 marks</h2>
+      <p class="sub">Each criterion from the module manual, what we have for it, and what is still missing.</p>
+    </div>
+    <div class="tablewrap" tabindex="0" role="region" aria-label="Code rubric status">
+      <table>
+        <thead><tr><th>Criterion</th><th>Marks</th><th>Status</th><th>What we have / what's left</th></tr></thead>
+        <tbody>
+          <tr><td class="crit">Visual design</td><td class="num">10</td><td><span class="pill done">Done</span></td><td>"Heritage" look used across the website, staff console and app, built on the client's wordmark style.</td></tr>
+          <tr><td class="crit">UX</td><td class="num">10</td><td><span class="pill done">Done</span></td><td>14 public pages, a 10-section staff console and 12 app screens. Forms explain their errors, and empty, loading and offline states are handled.</td></tr>
+          <tr><td class="crit">Responsiveness &amp; accessibility</td><td class="num">15</td><td><span class="pill done">Done</span></td><td>WCAG 2.2 AA audit at desktop and phone widths, and every finding fixed: contrast, heading order, tap-target size, keyboard access, reflow. See <code>docs/accessibility.md</code>.</td></tr>
+          <tr><td class="crit">Programming</td><td class="num">25</td><td><span class="pill done">Done</span></td><td>C#/.NET 10 in four layers, five design patterns, and a Kotlin Android app (MVVM). 235 unit tests, 98 integration tests and 24 Android tests.</td></tr>
+          <tr><td class="crit">Database</td><td class="num">20</td><td><span class="pill done">Done</span></td><td>SQL Server: 44 tables, 64 foreign keys, 4 EF Core migrations, and triggers that stop consent and audit records being changed. The ERD is generated from the live database (<code>docs/erd.md</code>).</td></tr>
+          <tr><td class="crit">APIs</td><td class="num">20</td><td><span class="pill done">Done</span></td><td>REST API with 12 controllers and Swagger docs. PayFast integration (sandbox only).</td></tr>
+          <tr><td class="crit">Security</td><td class="num">20</td><td><span class="pill done">Done in code</span></td><td>Argon2id passwords, JWT with refresh cookies, per-role access, rate limiting, POPIA audit log, security headers.<span class="left">Left: production secrets go into GitHub/Azure secrets, which the group adds.</span></td></tr>
+          <tr><td class="crit">Data flow</td><td class="num">20</td><td><span class="pill done">Done</span></td><td>Website, staff console and app all use the same API and database. For example, a mentor's concern in the app appears in the safeguarding lead's queue.</td></tr>
+          <tr><td class="crit">Hosting: deployment</td><td class="num">20</td><td><span class="pill done">Done</span></td><td>Live at <code>www.theebuhlefoundation.co.za</code> and <code>theebuhlefoundation.co.za</code>, with free HTTPS certificates that renew automatically; <code>http://</code> redirects to HTTPS. Azure App Service (B1, Linux, .NET 10) and Azure SQL (free serverless) in South Africa North. The database has no password: the app signs in with its own Azure identity. The client's email records were left untouched and checked afterwards.</td></tr>
+          <tr><td class="crit">Hosting: stability</td><td class="num">15</td><td><span class="pill done">Done</span></td><td>Both drills were run on the live site. <b>Rollback:</b> a deliberately broken release was undone in under 7 minutes. <b>Restore:</b> the database was restored to a copy in 46 minutes, and every table matched. Two health checks: <code>/health</code> (with the database) for deploys and <code>/health/live</code> for Azure's minute-by-minute check, so the free database can still pause. Automatic backups, HTTPS only.<span class="left">Kept free on purpose: no staging slot (needs the paid S1 tier) and no paid alerts. Everything is written up in <code>docs/deployment.md</code>, under "Drills" and "Keeping the database free".</span></td></tr>
+          <tr><td class="crit">GitHub branching</td><td class="num">15</td><td><span class="pill todo">Not started</span></td><td>Planned: <code>develop</code> for day-to-day work, <code>main</code> for releases, pull requests between them.<span class="left">Left: create the repo, commit, and have <b>every member</b> push work through their own branches and PRs.</span></td></tr>
+          <tr><td class="crit">CI/CD</td><td class="num">20</td><td><span class="pill part">Written, never run</span></td><td>Three workflows: <code>ci.yml</code>, <code>deploy.yml</code> and <code>security.yml</code>.<span class="left">Left: they have never run on GitHub. Push, then the pipeline's Azure identity gets set up (needs the repo name), add the three secrets, and fix whatever the first run shows.</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="works">
+    <div>
+      <h2 id="works">What works</h2>
+      <p class="sub">Tested locally and on the live site. The demo account emails are in the README. <b>On the live site they use a separate password</b>, which Lesego shares privately; the README password only works locally.</p>
+    </div>
+    <div class="cols">
+      <div>
+        <h3>Public website</h3>
+        <ul>
+          <li>Home, Programmes (plus each programme's own page), Impact, Events, News with pagination and articles, Donate, Volunteer, Contact, Privacy, Safeguarding, 404</li>
+          <li>Impact and donation totals come from real data, not typed-in numbers</li>
+          <li>Volunteer and contact forms validate, record POPIA consent, and land in the staff console</li>
+          <li>Donations go through the PayFast sandbox</li>
+          <li>Safeguarding and Contact pages show <b>Childline South Africa (116)</b>. The foundation's own line appears automatically once it's set in Azure.</li>
+          <li>Registration numbers and Section 18A tax-certificate offers only appear once the real NPO/PBO numbers are set, so no fake numbers are shown</li>
+          <li>Works on phone and desktop</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Staff console (<code>/admin</code>)</h3>
+        <ul>
+          <li>Overview, Learners, Register, Announcements, Messages, Volunteers, Donations, Safeguarding, Audit log</li>
+          <li>Each role sees only its own sections: programme staff are refused the safeguarding queue and the audit log</li>
+          <li><b>People:</b> add learners, parents (linked to their children), mentors and, for administrators, staff; issue invite and reset codes. Programme staff can't reset a staff account.</li>
+          <li><b>Safeguarding queue:</b> only the designated safeguarding lead can see it</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Android app (Kotlin)</h3>
+        <ul>
+          <li>11 screens: Sign in, Home, Learn, Subject, Progress, Badges, Buddies, Messages, Notifications, Mentees, Check-in</li>
+          <li>A different menu for learners, parents and mentors</li>
+          <li><b>New: invite-only accounts.</b> Staff add people in the console's <b>People</b> section; each person gets a one-time code and sets their own password in the app ("I have a code from the foundation") or at <code>/activate</code>. A forgotten password works the same way.</li>
+          <li>Mentor check-ins with a concern go straight to the safeguarding lead</li>
+          <li><b>New:</b> parents can give or decline permission for activities from Home</li>
+          <li><code>./gradlew :app:installAzure</code> installs a build that uses the live site; use it for the demo</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Data &amp; integrity</h3>
+        <ul>
+          <li>Consent history keeps every decision. The database refuses to edit or delete one</li>
+          <li>The audit log cannot be changed, even with direct database access</li>
+          <li>If a safeguarding concern can't reach anyone, the API refuses to save it and tells the mentor to phone instead</li>
+          <li>Demo data on the <b>live site</b>: learners, marks, attendance, 9 news posts, donations, resources, and one account per role</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="issues">
+    <div>
+      <h2 id="issues">What doesn't work yet, or has limits</h2>
+    </div>
+    <div class="issues">
+      <div class="issue minor"><h3>One email-security tweak for the client</h3><p>The domain's SPF record still has <code>+a</code>, which now lets Azure's shared address send email as the foundation. In Afrihost's DNS editor, change it to <code>v=spf1 include:spf.aserv.co.za +mx -all</code>. Details are in <code>docs/deployment.md</code>.</p></div>
+      <div class="issue minor"><h3>The live site holds demo data</h3><p>Learners, marks, news and donations on the live site are invented, for the presentation. Before the foundation uses it for real, it needs a fresh database. Deleting the demo rows isn't an option, because consent records and the audit log can't be deleted by design.</p></div>
+      <div class="issue"><h3>Some figures on the site are placeholders</h3><p>These came from our Task 1 prototype, not from the client. The most important is the Donate page's <b>"audited 2025 allocation"</b> (R1 284 000 / R188 000 / R94 000): it's invented but presented as audited. Also placeholders: the "what your gift buys" amounts, the Volunteer page's "most needed" counts, the main phone <code>+27 71 000 0000</code> and the Cornwallis Street address. The home and Impact statistics are calculated live, but from demo data.</p></div>
+      <div class="issue minor"><h3>The domain may show the old page for a while</h3><p>DNS changes take up to 2 hours to reach every network. Until then some people still see Afrihost's "Domain Registered" page. <code>www.theebuhlefoundation.co.za</code> and <code>theebuhle-foundation.azurewebsites.net</code> already work everywhere. This fixes itself.</p></div>
+      <div class="issue"><h3>CI/CD has never run</h3><p>The workflow files exist, but GitHub has never run them. Expect small fixes on the first push, such as missing secrets or path differences.</p></div>
+      <div class="issue minor"><h3>Payments are sandbox only</h3><p>PayFast works with PayFast's public test account. Real donations need the client's merchant ID, key and passphrase.</p></div>
+      <div class="issue minor"><h3>Emails aren't sent</h3><p>Email settings are empty until the client provides their Afrihost SMTP details.</p></div>
+      <div class="issue minor"><h3>Two app features need a run-through on the live site</h3><p>Nobody has yet (1) signed in to the app on the live data as parent, mentor and learner, or (2) tapped through the parent consent dialog and the new "I have a code" screen end to end. The automated tests cover the server side; this is about the phone.</p></div>
+      <div class="issue minor"><h3>The free database has a monthly limit</h3><p>It pauses after an hour with no visitors, and it only gets about <b>55 hours awake a month</b>. If that runs out, it stays paused, and the site is down until the next month. That's plenty for marking and the presentation, but don't leave the site open and refreshing. Open it 5 minutes before a demo so it has time to wake up. Check what's left: Azure portal → <code>theebuhle</code> database → Metrics → "Free amount remaining".</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="left">
+    <div>
+      <h2 id="left">Still to do</h2>
+      <p class="sub">Roughly in order. Hosting and CI/CD can't start until the repo exists.</p>
+    </div>
+    <div class="todo-list">
+      <div class="todo-item"><span class="owner">Group</span><p><b>Create the GitHub repo and make the first commit.</b> Set up <code>main</code> and <code>develop</code> and protect <code>main</code>. After that commit, delete the old <code>mobile/</code> (React Native) and <code>_reference-php/</code> folders; the Kotlin app replaces them.</p></div>
+      <div class="todo-item"><span class="owner">Everyone</span><p><b>Work through your own branches and pull requests.</b> The markers look at the commit history per member, so each person needs their own commits and reviewed PRs.</p></div>
+            <div class="todo-item"><span class="owner">Group</span><p><b>Connect the pipeline to Azure:</b> once the repo exists, its Azure sign-in (OIDC) gets set up, then add <code>AZURE_CLIENT_ID</code>, <code>AZURE_TENANT_ID</code> and <code>AZURE_SUBSCRIPTION_ID</code> as secrets and push to get the first CI and deploy run to pass.</p></div>
+      <div class="todo-item"><span class="owner">Client</span><p><b>Get the client's details:</b> PayFast merchant ID, key and passphrase; Afrihost SMTP login; the foundation's PBO/NPO numbers. These go into the Azure app settings, never into the repo.</p></div>
+      <div class="todo-item"><span class="owner">Client</span><p><b>Confirm or replace the placeholder details:</b> the real safeguarding phone line (the pages show Childline 116 until then), the main phone number, the address, the real 2025 financial allocation (or remove it), the "what your gift buys" amounts and the volunteer counts. Also check that the <code>safeguarding@</code> mailbox exists at Afrihost.</p></div>
+            <div class="todo-item"><span class="owner">Group</span><p><b>Update the Task 1 documents</b> to match what was built, for example Kotlin instead of React Native.</p></div>
+      <div class="todo-item"><span class="owner">Everyone</span><p><b>Sign in to the live site as each demo role</b> (ask Lesego for the demo password) and report anything broken before the presentation.</p></div>
+      <div class="todo-item"><span class="owner">Everyone</span><p><b>Presentation (60 marks):</b> the outline and demo script are ready in <code>docs/presentation.md</code>, and the demo runs on the live site. Still needed: <b>make the slides</b>, <b>split the speaking parts</b>, <b>rehearse the 6-minute demo</b>, and <b>record a backup video</b>. One demo step (the green pipeline run) needs the GitHub repo to exist first. Open the site 5 minutes before presenting, because the free database sleeps.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="docs">
+    <div><h2 id="docs">Where to read more</h2></div>
+    <div class="tablewrap" tabindex="0" role="region" aria-label="Documentation index">
+      <table>
+        <thead><tr><th>File</th><th>What's in it</th></tr></thead>
+          <tr><td><code>docs/access.md</code></td><td><b>Start here:</b> the live addresses, which account to use, how to install the app</td></tr>
+        <tbody>
+          <tr><td><code>README.md</code></td><td>How to run everything locally, and the test log-ins</td></tr>
+          <tr><td><code>docs/architecture.md</code></td><td>Layers, the five design patterns, why it's one application</td></tr>
+          <tr><td><code>docs/database.md</code> · <code>docs/erd.md</code></td><td>Schema, migrations, ERD diagrams</td></tr>
+          <tr><td><code>docs/api.md</code></td><td>Every endpoint and who may call it</td></tr>
+          <tr><td><code>docs/security.md</code></td><td>Passwords, tokens, roles, POPIA</td></tr>
+          <tr><td><code>docs/devops.md</code> · <code>docs/deployment.md</code></td><td>CI/CD workflows, secrets, Azure setup, rollback</td></tr>
+          <tr><td><code>docs/testing.md</code></td><td>What the automated tests cover</td></tr>
+          <tr><td><code>docs/traceability.md</code></td><td>Each client requirement → screen → endpoint → test</td></tr>
+          <tr><td><code>docs/accessibility.md</code></td><td>The WCAG audit and fixes</td></tr>
+          <tr><td><code>docs/presentation.md</code></td><td>Slide outline and demo script</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>All code lives in <code>part 2/</code>. Tests last run 22 September 2026: 235 unit, 98 integration and 24 Android, with no failures.</footer>
+</div>
+
+</body>
+</html>

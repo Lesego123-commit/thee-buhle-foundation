@@ -1,0 +1,127 @@
+erDiagram
+    donors ||--o{ donations : "donor_id"
+    donors ||--o{ sponsorships : "donor_id"
+    events ||--o{ event_registrations : "event_id"
+    events |o--o{ permission_forms : "event_id"
+    learners |o--o{ event_registrations : "learner_id"
+    learners ||--o| sponsorships : "learner_id"
+    users |o--o{ donors : "user_id"
+    users |o--o{ volunteer_applications : "user_id"
+    venues |o--o{ events : "venue_id"
+    volunteer_applications ||--o{ compliance_documents : "application_id"
+    contact_messages {
+        uniqueidentifier id PK
+        nvarchar topic
+        nvarchar name
+        nvarchar organisation
+        nvarchar email
+        nvarchar phone
+        nvarchar body
+        bit consent_popia
+        nvarchar status
+        uniqueidentifier handled_by FK
+        nvarchar ip_address
+    }
+    donations {
+        uniqueidentifier id PK
+        uniqueidentifier donor_id FK
+        decimal amount
+        nvarchar currency
+        nvarchar frequency
+        nvarchar designation
+        nvarchar status
+        nvarchar gateway
+        nvarchar gateway_reference UK
+        bit wants_section18_a
+        datetimeoffset section18_a_issued_at
+        datetimeoffset received_at
+        bit consent_popia
+    }
+    donors {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar display_name
+        nvarchar email UK
+        nvarchar phone
+        bit is_organisation
+        nvarchar tax_number
+    }
+    event_registrations {
+        uniqueidentifier id PK
+        uniqueidentifier event_id FK,UK
+        uniqueidentifier learner_id FK
+        nvarchar attendee_name
+        nvarchar email UK
+        nvarchar phone
+        int party_size
+        bit paid
+        bit consent_popia
+    }
+    events {
+        uniqueidentifier id PK
+        nvarchar title
+        nvarchar slug UK
+        nvarchar type
+        uniqueidentifier venue_id FK
+        nvarchar location
+        datetimeoffset starts_at
+        datetimeoffset ends_at
+        decimal fee
+        nvarchar fee_note
+        int capacity
+        nvarchar description
+        bit is_published
+    }
+    impact_metrics {
+        nvarchar metric_key PK
+        int school_year PK
+        nvarchar label
+        nvarchar value_text
+        nvarchar footnote
+        int sort_order
+        datetimeoffset computed_at
+    }
+    news_posts {
+        uniqueidentifier id PK
+        nvarchar slug UK
+        nvarchar category
+        nvarchar title
+        nvarchar excerpt
+        nvarchar body_html
+        nvarchar author_name
+        int read_minutes
+        bit is_featured
+        datetimeoffset published_at
+    }
+    newsletter_subscribers {
+        uniqueidentifier id PK
+        nvarchar email UK
+        datetimeoffset confirmed_at
+        datetimeoffset unsubscribed_at
+    }
+    sponsorships {
+        uniqueidentifier id PK
+        uniqueidentifier donor_id FK
+        uniqueidentifier learner_id FK,UK
+        decimal annual_amount
+        date start_date
+        date end_date
+    }
+    volunteer_applications {
+        uniqueidentifier id PK
+        uniqueidentifier user_id FK
+        nvarchar first_name
+        nvarchar surname
+        nvarchar email
+        nvarchar phone
+        nvarchar suburb
+        nchar id_number_last4
+        nvarchar skills
+        nvarchar availability
+        nvarchar experience
+        nvarchar status
+        bit consent_popia
+        datetimeoffset submitted_at
+        uniqueidentifier reviewed_by FK
+        datetimeoffset reviewed_at
+    }

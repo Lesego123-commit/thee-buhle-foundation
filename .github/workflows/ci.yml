@@ -1,0 +1,285 @@
+# =============================================================================
+#  Continuous integration.
+#
+#  Runs on every push and every pull request. Nothing merges that does not pass
+#  this workflow, which is the point: a check that can be skipped is a check
+#  nobody relies on.
+#
+#  The two jobs are deliberately separate:
+#
+#    build-and-test   compiles with warnings-as-errors and runs the unit suite.
+#                     Fast — no database, no containers — so a compile error or
+#                     a broken rule is reported in under a minute.
+#
+#    integration      stands up a real SQL Server, applies the real migration
+#                     and runs the API end to end. Slower, and it must be a real
+#                     database: the rules worth testing at that level are
+#                     enforced by filtered unique indexes, check constraints,
+#                     an identity column and a locking read, none of which an
+#                     in-memory provider has.
+#
+#  Neither job can reach a secret. There is nothing to deploy here and nothing
+#  to sign, so this workflow needs no credentials at all — which is why it is
+#  safe to run on a pull request from a fork.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  # Lets a maintainer re-run CI without pushing an empty commit.
+  workflow_dispatch:
+
+# Read-only, explicitly. The default for a repository can be write, and a
+# workflow that does not need write access should not have it — a compromised
+# action cannot push to a branch it cannot write.
+permissions:
+  contents: read
+
+# A new push to the same branch cancels the run in progress. Saves minutes on a
+# branch somebody is iterating on, and the only run whose result matters is the
+# one for the latest commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Skips the first-run experience, which otherwise writes a few seconds of
+  # noise into the top of every log.
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  build-and-test:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Restore is its own step so a failure here is unmistakably a package
+      # problem rather than a compile error.
+      - name: Restore
+        run: dotnet restore TheeBuhle.slnx
+
+      # -c Release, because that is what deploys. A Debug build can pass while
+      # Release fails on a nullable or an analyser rule.
+      #
+      # TreatWarningsAsErrors is already on in Directory.Build.props, so this
+      # step is where a new warning stops being somebody's problem later. There
+      # is no separate "lint" step because there does not need to be — the
+      # analysers run as part of the compile and fail it.
+      - name: Build
+        run: dotnet build TheeBuhle.slnx -c Release --no-restore
+
+      - name: Unit tests
+        run: |
+          dotnet test tests/TheeBuhle.UnitTests \
+            -c Release \
+            --no-build \
+            --logger "trx;LogFileName=unit-tests.trx" \
+            --results-directory ./artefacts/test-results \
+            --collect:"XPlat Code Coverage"
+
+      # Uploaded even when the tests fail — especially then. A red build with no
+      # artefact means reading the log to find out which assertion went; the trx
+      # says it directly.
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: ./artefacts/test-results
+          retention-days: 14
+
+      # The migration is generated from the model, so it can drift from it — add
+      # a property, forget the migration, and the build stays green while the
+      # deployed schema is wrong.
+      #
+      # `migrations has-pending-model-changes` is the check for exactly that, and
+      # it needs no database because it compares the model to the snapshot.
+      - name: Check the migration matches the model
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.12
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef migrations has-pending-model-changes \
+            --project src/TheeBuhle.Infrastructure \
+            --startup-project src/TheeBuhle.Api \
+            --no-build \
+            --configuration Release
+
+      # Published here rather than in the deploy workflow, so the artefact that
+      # deploys is the one CI tested. Building again at deploy time would mean
+      # deploying something no test has ever run against.
+      - name: Publish
+        run: |
+          dotnet publish src/TheeBuhle.Api \
+            -c Release \
+            --no-build \
+            -o ./artefacts/api
+
+      - name: Upload the published API
+        uses: actions/upload-artifact@v4
+        with:
+          name: api
+          path: ./artefacts/api
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    # SQL Server as a service container, not a mock and not an in-memory
+    # provider. The properties these tests establish — that a second
+    # safeguarding lead is refused, that an unroutable concern leaves no row,
+    # that a flagged note is filtered in SQL — are all properties of the real
+    # schema.
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          # A throwaway password for a container that exists for eight minutes
+          # and is reachable only from this job's network. Not a secret, and
+          # putting it in a repository secret would imply otherwise.
+          MSSQL_SA_PASSWORD: 'CiOnly-Pa55w0rd!'
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'CiOnly-Pa55w0rd!' -No -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 30s
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore TheeBuhle.slnx
+
+      - name: Build
+        run: dotnet build TheeBuhle.slnx -c Release --no-restore
+
+      # The health check above gates the container, but the driver can still be
+      # refused for a few seconds after SQL Server answers a query — so the
+      # connection is confirmed from the runner before the tests start. A
+      # timeout here is a clear message rather than forty confusing test
+      # failures.
+      - name: Wait for SQL Server
+        run: |
+          for attempt in $(seq 1 30); do
+            if /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'CiOnly-Pa55w0rd!' -No -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server is accepting connections."
+              exit 0
+            fi
+            echo "Attempt $attempt: not ready yet."
+            sleep 2
+          done
+          echo "SQL Server did not become ready." >&2
+          exit 1
+
+      # The fixture reads TEST_SQL_SERVER and appends its own per-test database
+      # name, so each test class gets an isolated database that is dropped
+      # afterwards.
+      - name: Integration tests
+        env:
+          TEST_SQL_SERVER: 'Server=localhost,1433;User Id=sa;Password=CiOnly-Pa55w0rd!;TrustServerCertificate=True;Encrypt=False'
+        run: |
+          dotnet test tests/TheeBuhle.IntegrationTests \
+            -c Release \
+            --no-build \
+            --logger "trx;LogFileName=integration-tests.trx" \
+            --results-directory ./artefacts/test-results
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: ./artefacts/test-results
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  android:
+    name: Android build and tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      # The JDK the Android Gradle Plugin needs. Temurin 21 matches the
+      # JetBrains Runtime that Android Studio bundles, so a build here and a
+      # build on a developer's machine run on the same major version.
+      - name: Set up the JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # Lint before the tests: an accessibility or resource problem is cheaper
+      # to read from a report than to find on a phone, and it fails the job
+      # rather than being filed away as a warning nobody opens.
+      - name: Lint
+        working-directory: android
+        run: ./gradlew :app:lintDebug --no-daemon
+
+      - name: Unit tests
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-results
+          path: android/app/build/reports/tests/testDebugUnitTest
+          retention-days: 7
+
+      - name: Upload the lint report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint
+          path: android/app/build/reports/lint-results-debug.html
+          retention-days: 7
+
+      # A debug APK, so a marker or a client can install the build that CI
+      # verified rather than one somebody assembled by hand.
+      - name: Assemble the debug APK
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

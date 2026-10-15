@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TheeBuhle.Api/TheeBuhle.Api.csproj" />
+    <Project Path="src/TheeBuhle.Application/TheeBuhle.Application.csproj" />
+    <Project Path="src/TheeBuhle.Domain/TheeBuhle.Domain.csproj" />
+    <Project Path="src/TheeBuhle.Infrastructure/TheeBuhle.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TheeBuhle.IntegrationTests/TheeBuhle.IntegrationTests.csproj" />
+    <Project Path="tests/TheeBuhle.UnitTests/TheeBuhle.UnitTests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,13 @@
+@using TheeBuhle.Api
+@using TheeBuhle.Api.Pages
+@using TheeBuhle.Domain.Common
+@using TheeBuhle.Domain.Repositories
+@using TheeBuhle.Application.Services
+@using TheeBuhle.Application.Listeners
+@* The foundation's registration numbers, from configuration. Every page that
+   states a registration or promises a tax certificate asks this first, so the
+   site never shows a number the foundation has not given us. *@
+@inject Section18AOptions Registration
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@namespace TheeBuhle.Api.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Heritage palette, the same one the website uses. Held here so a colour
+    is stated once for the whole app rather than typed into each layout.
+-->
+<resources>
+    <color name="ink">#17150F</color>
+    <color name="cream">#FAF6EE</color>
+    <color name="white">#FFFFFF</color>
+    <color name="forest">#2E4034</color>
+    <color name="forest_light">#5C6B4F</color>
+    <!-- Deepened from #A87C32 so gold text passes WCAG AA: 5.1:1 on cream,
+         5.4:1 on white. Matches the website gold token. -->
+    <color name="gold">#856228</color>
+    <color name="gold_soft">#C2A870</color>
+    <color name="gold_d">#6B4F1E</color>
+    <color name="clay">#8C4A3A</color>
+    <color name="mist">#EDE5D6</color>
+    <color name="line">#E2D9C8</color>
+    <!-- Deepened from #8E887C (3.4:1) to 5.1:1 on cream for captions and the
+         unselected nav labels. Matches the website ink40 token. -->
+    <color name="ink_40">#6D685E</color>
+</resources>

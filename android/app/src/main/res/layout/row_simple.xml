@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="52dp"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowTitle"
+            style="@style/TheeBuhle.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Mathematics · Euclidean geometry" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            style="@style/TheeBuhle.Quiet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            tools:text="Sat 19 Sep · Sebokeng Community Centre" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/rowPill"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:background="@color/mist"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="5dp"
+        android:textColor="@color/forest"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        tools:text="PRESENT" />
+</LinearLayout>

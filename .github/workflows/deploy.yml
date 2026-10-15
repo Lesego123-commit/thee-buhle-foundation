@@ -1,0 +1,293 @@
+# =============================================================================
+#  Deployment to Azure App Service.
+#
+#  The order of operations here is the whole design, and it is chosen so that a
+#  failure at any point leaves a working site:
+#
+#    1. Build and test, here, in a gating job. Nothing deploys that has not
+#       built and passed its tests.
+#    2. Apply the migration, as a script reviewed in the log, BEFORE the new
+#       code goes live.
+#    3. Deploy.
+#    4. Check the site's health, and fail loudly if it does not come up.
+#
+#  THERE IS NO STAGING SLOT, AND THAT IS A COST DECISION.
+#  Deployment slots need the Standard tier (about US$70 a month), which would
+#  spend most of the student subscription's credit on one feature. The site
+#  runs on B1 instead. The price is a short restart during each deploy, and a
+#  rollback that means redeploying the previous commit rather than swapping
+#  back in seconds. Moving to S1 and restoring the slot-and-swap steps is the
+#  first change to make once the foundation pays for its own hosting; see
+#  docs/deployment.md.
+#
+#  Two decisions are worth reading the reasoning for.
+#
+#  MIGRATIONS ARE NOT APPLIED AT STARTUP IN PRODUCTION.
+#  The API migrates on boot in Development, which is convenient. In production
+#  that would mean a schema change applied by whichever instance happens to
+#  start first, with no review, no backup checkpoint, and a race between
+#  instances the moment the App Service scales out. Here it is a deliberate
+#  step, with the SQL printed into the workflow log so there is a record of
+#  exactly what ran.
+#
+#  THE MIGRATION RUNS BEFORE THE NEW CODE, NOT AFTER.
+#  Which means the old code runs briefly against the new schema — so every
+#  migration has to be backwards-compatible with the version it is replacing.
+#  That is a real constraint on how a column gets renamed (add, backfill,
+#  deploy, drop later) and it is the price of never having the new code run
+#  against the old schema, which is the failure that produces 500s on every
+#  request instead of a brief tolerable mismatch.
+# =============================================================================
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # A manual deploy, for a rollback or a re-run after fixing a setting.
+  workflow_dispatch:
+    inputs:
+      skip_migration:
+        description: 'Skip the migration step (only for a code-only rollback)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  # Required for the federated credential below. Nothing else needs write.
+  id-token: write
+
+# Never two deploys at once, and never cancel one in progress — a deploy
+# interrupted between the migration and the deploy is the one state that is
+# genuinely awkward to reason about.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  AZURE_WEBAPP_NAME: theebuhle-foundation
+  AZURE_RESOURCE_GROUP: theebuhle-rg
+  # Names, not secrets. The database has no password at all: it accepts only
+  # Microsoft Entra sign-ins, so the workflow connects as its own federated
+  # identity and the running app connects as its managed identity.
+  AZURE_SQL_SERVER: theebuhle-sql
+  AZURE_SQL_DATABASE: theebuhle
+
+jobs:
+  # ---------------------------------------------------------------------------
+  #  The gate.
+  #
+  #  This duplicates work the CI workflow already does, and that is deliberate.
+  #  CI and this workflow both trigger on a push to main, so they run in
+  #  PARALLEL — a deploy that merely assumed CI had passed would in fact be
+  #  racing it, and would happily ship a commit whose tests were still running
+  #  or had just gone red.
+  #
+  #  The alternatives were considered and rejected:
+  #
+  #   * A `workflow_run` trigger. Correct, and it makes the deploy depend on a
+  #     run somebody has to go and look up to understand — and it silently does
+  #     nothing if CI is renamed.
+  #   * Branch protection requiring the CI check. Also correct, and it lives in
+  #     a repository setting rather than in the repository, so a fresh clone or
+  #     a new fork has no gate at all and nothing in the code says so.
+  #
+  #  Three extra minutes to make the guarantee visible in the file that relies
+  #  on it is worth paying.
+  # ---------------------------------------------------------------------------
+  gate:
+    name: Build and test before deploying
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore TheeBuhle.slnx
+
+      - name: Build
+        run: dotnet build TheeBuhle.slnx -c Release --no-restore
+
+      - name: Unit tests
+        run: dotnet test tests/TheeBuhle.UnitTests -c Release --no-build
+
+      # The same drift check CI runs. A migration that does not match the model
+      # would otherwise be applied to production in the very next job.
+      - name: Check the migration matches the model
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.12
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef migrations has-pending-model-changes \
+            --project src/TheeBuhle.Infrastructure \
+            --startup-project src/TheeBuhle.Api \
+            --no-build \
+            --configuration Release
+
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: gate
+
+    # A GitHub environment, so the repository can require an approval before a
+    # production deploy and so the secrets below are scoped to it rather than
+    # readable by every workflow in the repository.
+    environment:
+      name: production
+      url: https://theebuhlefoundation.co.za
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ---------------------------------------------------------------------
+      #  Sign in with a federated credential — no stored password.
+      #
+      #  OpenID Connect rather than a service-principal secret. GitHub presents
+      #  a short-lived token that Azure trusts for this repository and this
+      #  environment only, so there is no long-lived credential in the
+      #  repository to leak, rotate, or forget to rotate.
+      #
+      #  The three values below are identifiers, not secrets — they are stored
+      #  as secrets because that is where the repository keeps configuration
+      #  that names our tenant, not because knowing them grants anything.
+      # ---------------------------------------------------------------------
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # ---------------------------------------------------------------------
+      #  The migration.
+      # ---------------------------------------------------------------------
+
+      # An idempotent SCRIPT, not `database update`. Three reasons, in order of
+      # how much they matter:
+      #
+      #  1. It is printed into the log before it runs, so there is a permanent
+      #     record of the exact SQL applied to a database holding children's
+      #     records.
+      #  2. Idempotent means safe to re-run — a deploy retried after a network
+      #     failure does not half-apply anything.
+      #  3. It needs no EF tooling or .NET runtime on the database side, so the
+      #     same script can be handed to somebody to apply by hand if the
+      #     workflow is unavailable.
+      - name: Generate the migration script
+        if: ${{ !inputs.skip_migration }}
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.12
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef migrations script \
+            --idempotent \
+            --project src/TheeBuhle.Infrastructure \
+            --startup-project src/TheeBuhle.Api \
+            --output ./migration.sql
+          echo '--- the SQL that will be applied -------------------------------'
+          cat ./migration.sql
+          echo '----------------------------------------------------------------'
+
+      - name: Keep the migration script as an artefact
+        if: ${{ !inputs.skip_migration }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-sql
+          path: ./migration.sql
+          # Longer than the test artefacts: this is the record of a schema
+          # change, and the question "what did we apply in September?" gets
+          # asked months later.
+          retention-days: 90
+
+      # The runner's address is added to the Azure SQL firewall for the length
+      # of the migration and removed afterwards, so the database is not
+      # reachable from the internet between deploys. A GitHub runner has no
+      # fixed address, which is why the rule is created per run rather than
+      # allow-listed once. The removal is its own step with `if: always()`, so a
+      # failed migration cannot leave the hole open.
+      - name: Open the database firewall for this runner
+        if: ${{ !inputs.skip_migration }}
+        run: |
+          RUNNER_IP=$(curl -s --fail https://api.ipify.org)
+          echo "Opening the firewall for $RUNNER_IP"
+          az sql server firewall-rule create             --resource-group "${{ env.AZURE_RESOURCE_GROUP }}"             --server "${{ env.AZURE_SQL_SERVER }}"             --name "gh-deploy-${{ github.run_id }}"             --start-ip-address "$RUNNER_IP"             --end-ip-address "$RUNNER_IP"             --output none
+
+      # Signs in as the workflow's own federated identity (the azure/login
+      # above), which is a database user with schema rights. No SQL password
+      # exists to be stored, leaked or rotated.
+      - name: Apply the migration
+        if: ${{ !inputs.skip_migration }}
+        uses: azure/sql-action@v2.3
+        with:
+          connection-string: "Server=tcp:${{ env.AZURE_SQL_SERVER }}.database.windows.net,1433;Initial Catalog=${{ env.AZURE_SQL_DATABASE }};Authentication=Active Directory Default;Encrypt=True;"
+          path: ./migration.sql
+
+      - name: Close the database firewall
+        if: ${{ always() && !inputs.skip_migration }}
+        run: |
+          az sql server firewall-rule delete             --resource-group "${{ env.AZURE_RESOURCE_GROUP }}"             --server "${{ env.AZURE_SQL_SERVER }}"             --name "gh-deploy-${{ github.run_id }}"             --output none || true
+
+      # ---------------------------------------------------------------------
+      #  The application.
+      # ---------------------------------------------------------------------
+
+      - name: Restore
+        run: dotnet restore TheeBuhle.slnx
+
+      - name: Build
+        run: dotnet build src/TheeBuhle.Api -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish src/TheeBuhle.Api -c Release --no-build -o ./publish
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ./publish
+
+      # The health endpoint checks the database connection, so a passing check
+      # means the new code has started AND can reach the schema the migration
+      # just applied.
+      #
+      # Retried, because the app takes a little while to start after a deploy
+      # and a single request against a cold instance proves nothing.
+      - name: Check the site is healthy
+        run: |
+          URL="https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+
+          for attempt in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL" || echo "000")
+
+            if [ "$STATUS" = "200" ]; then
+              echo "The site is healthy."
+              exit 0
+            fi
+
+            echo "Attempt $attempt: $URL answered $STATUS."
+            sleep 10
+          done
+
+          # No automatic rollback: redeploying an older commit would also need
+          # its schema to match, and somebody should look before anything else
+          # changes. docs/deployment.md has the rollback steps.
+          echo "::error::The site is not healthy after the deploy. See 'Rolling back' in docs/deployment.md."
+          exit 1
+
+      - name: Sign out of Azure
+        if: always()
+        run: az logout || true

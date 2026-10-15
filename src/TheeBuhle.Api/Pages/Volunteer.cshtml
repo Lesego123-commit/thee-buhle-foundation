@@ -1,0 +1,203 @@
+@page "/volunteer"
+@model VolunteerModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Get involved › Volunteer</p>
+    <h1 class="d2">Bring one skill and two hours a week.</h1>
+    <p class="lede">
+        Tutors, mentors, workshop facilitators, drivers, admin help. All volunteers working with children
+        complete a police clearance and our child-safeguarding induction — no exceptions.
+    </p>
+</header>
+
+<div class="filterbar">
+    <span class="alabel" style="margin:0">Most needed right now</span>
+    <div class="chipset spread">
+        @foreach (var (role, needed) in VolunteerModel.MostNeeded)
+        {
+            <span class="chip">@role <b style="color:var(--gold)">@needed</b></span>
+        }
+    </div>
+</div>
+
+<section class="band band--cream">
+    <div class="grid split" style="grid-template-columns:1fr 340px;gap:56px;align-items:start">
+
+        <form class="card pad" id="volunteerForm" novalidate>
+            <p class="notice" data-notice hidden></p>
+
+            <h2 class="d4">Personal details</h2>
+            <div class="grid g2" style="margin:20px 0 34px;gap:18px">
+                <label class="f">
+                    <span>First name<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="firstName" type="text" required autocomplete="given-name" placeholder="Lesego">
+                    <span class="field-error" data-error-for="firstName"></span>
+                </label>
+                <label class="f">
+                    <span>Surname<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="surname" type="text" required autocomplete="family-name" placeholder="Masike">
+                    <span class="field-error" data-error-for="surname"></span>
+                </label>
+                <label class="f">
+                    <span>Email address<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="email" type="email" required autocomplete="email" placeholder="lesego@@email.co.za">
+                    <span class="field-error" data-error-for="email"></span>
+                </label>
+                <label class="f">
+                    <span>Mobile number<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="phone" type="tel" required autocomplete="tel" placeholder="071 000 0000">
+                    <span class="field-error" data-error-for="phone"></span>
+                </label>
+                <label class="f">
+                    <span>Suburb / area</span>
+                    <input class="input" name="suburb" type="text" autocomplete="address-level2" placeholder="Vanderbijlpark">
+                    <span class="field-error" data-error-for="suburb"></span>
+                </label>
+                <label class="f">
+                    <span>ID number</span>
+                    <input class="input" name="idNumber" type="text" inputmode="numeric" placeholder="Required for police clearance">
+                    <span class="hint">
+                        Needed for the SAPS clearance application, which we submit on your behalf.
+                        We keep only the last four digits on our own system.
+                    </span>
+                    <span class="field-error" data-error-for="idNumber"></span>
+                </label>
+            </div>
+
+            <h2 class="d4">Skills &amp; areas of expertise<span class="req" aria-hidden="true">*</span></h2>
+            <p class="quiet" style="margin:8px 0 16px">Select everything you would be comfortable helping with.</p>
+            <div class="chipset" data-multiselect data-collect="skills" role="group" aria-label="Skills">
+                @for (var i = 0; i < VolunteerModel.Skills.Length; i++)
+                {
+                    var skill = VolunteerModel.Skills[i];
+
+                    <button type="button" class="tog" data-value="@skill"
+                            aria-pressed="@(i < 2 ? "true" : "false")">@skill</button>
+                }
+            </div>
+            <span class="field-error" data-error-for="skills"></span>
+
+            <h2 class="d4" style="margin-top:34px">Availability<span class="req" aria-hidden="true">*</span></h2>
+            <p class="quiet" style="margin:8px 0 16px">Tap the times you could usually make.</p>
+            <div class="tablewrap" data-availability tabindex="0" role="region" aria-label="Weekly availability">
+                <table style="min-width:520px">
+                    <caption class="visually-hidden">Choose the days and times you are available</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col"><span class="visually-hidden">Time of day</span></th>
+                            @foreach (var day in VolunteerModel.Days)
+                            {
+                                <th scope="col">@day</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var slot in VolunteerModel.Slots)
+                        {
+                            <tr>
+                                <th scope="row">@slot</th>
+                                @foreach (var day in VolunteerModel.Days)
+                                {
+                                    @* Saturday morning is pre-selected: it is when the tutoring actually runs. *@
+                                    var preset = slot == "Morning" && day == "Sat";
+
+                                    <td style="text-align:center;padding:8px">
+                                        <button type="button" class="tog tog--gold"
+                                                data-slot="@slot" data-day="@day"
+                                                aria-pressed="@(preset ? "true" : "false")"
+                                                aria-label="@slot on @day"
+                                                style="padding:8px 10px;min-width:38px">
+                                            <span aria-hidden="true">·</span>
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <span class="field-error" data-error-for="availability"></span>
+
+            <h2 class="d4" style="margin-top:34px">Experience</h2>
+            <label class="f" style="margin-top:16px">
+                <span>Previous volunteering or mentoring experience</span>
+                <textarea class="input" name="experience" rows="4"
+                          placeholder="Two years tutoring Grade 11 maths at my church youth group."></textarea>
+                <span class="field-error" data-error-for="experience"></span>
+            </label>
+
+            <div class="card card--gold pad" style="margin-top:24px">
+                <h3 class="d5" style="color:var(--gold-d)">🛡 Child-safety compliance — required for all volunteers</h3>
+                <p style="margin:8px 0 18px;font-size:13.5px;line-height:1.6;color:var(--gold-d)">
+                    South African law requires anyone working with children to be screened against the National
+                    Child Protection Register. We handle the application for you — we just need the documents
+                    below, which a staff member will collect at your induction.
+                </p>
+                <div class="stack" style="gap:10px">
+                    @foreach (var (document, note) in VolunteerModel.Documents)
+                    {
+                        <div style="display:flex;gap:12px;align-items:center;background:#fff;padding:13px 15px">
+                            <span aria-hidden="true" style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none">i</span>
+                            <div style="flex:1">
+                                <b style="font-size:13px">@document</b>
+                                <p class="dim" style="margin:1px 0 0;font-size:12px">@note</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <label class="check" style="margin-top:26px">
+                <input type="checkbox" name="consentPopia" required>
+                <span>
+                    I consent to Thee Buhle Foundation processing my personal information for volunteer
+                    screening in line with POPIA, and I agree to the child-safeguarding code of
+                    conduct.<span class="req" aria-hidden="true">*</span>
+                </span>
+            </label>
+            <span class="field-error" data-error-for="consentPopia"></span>
+
+            <div class="row" style="margin-top:26px">
+                <button class="btn btn--forest" type="submit">Submit application</button>
+                <a class="btn btn--ghost" href="/contact?topic=volunteering">Ask a question first</a>
+            </div>
+        </form>
+
+        <aside class="grid" style="gap:20px">
+            <div class="card pad-s">
+                <h2 class="d5">What happens next</h2>
+                <div class="list" style="margin-top:14px">
+                    @for (var i = 0; i < VolunteerModel.NextSteps.Length; i++)
+                    {
+                        var (step, when) = VolunteerModel.NextSteps[i];
+
+                        <div>
+                            <span aria-hidden="true" style="width:24px;height:24px;border-radius:50%;background:var(--goldSoft);color:var(--gold-d);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none">@(i + 1)</span>
+                            <div>
+                                <b style="font-size:14px">@step</b>
+                                <p class="dim" style="margin:1px 0 0;font-size:12px">@when</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card card--forest pad-s">
+                <h2 class="d5" style="color:#fff">Can&rsquo;t volunteer right now?</h2>
+                <p style="margin:10px 0 18px;font-size:14px;line-height:1.6;color:rgba(255,255,255,.8)">
+                    A monthly donation of R250 pays for the tutoring you would have delivered.
+                </p>
+                <a class="btn btn--light btn--block btn--s" href="/donate">Donate instead</a>
+            </div>
+
+            <div class="card pad-s">
+                <h2 class="d5">Questions?</h2>
+                <p class="quiet" style="margin:10px 0 0;line-height:1.9">
+                    <a href="mailto:hello@@theebuhlefoundation.co.za">hello@@theebuhlefoundation.co.za</a><br>
+                    <a href="tel:+27710000000">+27 71 000 0000</a><br>
+                    <a href="https://wa.me/27710000000" rel="noopener noreferrer">WhatsApp us</a> — we reply fastest here
+                </p>
+            </div>
+        </aside>
+    </div>
+</section>

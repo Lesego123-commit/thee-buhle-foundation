@@ -1,0 +1,133 @@
+@page "/safeguarding"
+@model SafeguardingModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › POPIA &amp; child safeguarding</p>
+    <h1 class="d2" style="max-width:24ch">Keeping the children we work with safe</h1>
+    <p class="lede">
+        Everything on this page is a rule our systems enforce, not a statement of intent.
+        Last reviewed @PolicyReview.Describe(PolicyReview.Safeguarding).
+    </p>
+</header>
+
+<section class="band band--white">
+    <div class="notice notice--warn" style="max-width:74ch">
+        <span aria-hidden="true">⚑</span>
+        <div>
+            <b>If a child is in immediate danger, call 10111 or your nearest SAPS station first.</b>
+            @if (Configuration["Safeguarding:Phone"] is { Length: > 0 } topPhone)
+            {
+                <text>Then call our safeguarding lead on <a href="tel:@SiteFormat.TelHref(topPhone)">@topPhone</a>.</text>
+            }
+            else
+            {
+                <text>For support at any hour, call Childline South Africa free on <a href="tel:116">116</a>.</text>
+            }
+        </div>
+    </div>
+
+    <div class="prose" style="max-width:74ch;margin-top:40px">
+        <h2 class="d4">Who may work with our learners</h2>
+        <p class="lede">
+            Every adult who works with a child in our programmes is screened against the National Child
+            Protection Register through a SAPS police clearance, and completes a two-hour safeguarding
+            induction before their first session. We apply for the clearance on the volunteer&rsquo;s behalf.
+        </p>
+        <p class="lede">
+            <b>This is enforced by the system, not by memory.</b> A mentor cannot be assigned to a learner
+            unless their clearance is recorded as current — an expired clearance blocks the assignment
+            outright, and clearances are checked against today&rsquo;s date every night so that a lapse is visible
+            the morning it happens rather than at the next audit.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">How a concern is handled</h2>
+        <p class="lede">
+            Any mentor or staff member can flag a concern about a learner from their own screen. When they do,
+            three things happen:
+        </p>
+        <ol style="font-size:16px;line-height:1.8">
+            <li>
+                The concern is routed to whoever is competent to act on it — a mentoring matter to the mentor
+                lead, an attendance or transport matter to the programme manager, and anything touching a
+                child&rsquo;s wellbeing, home or safety <b>straight to our designated safeguarding lead</b>.
+            </li>
+            <li>
+                <b>It becomes invisible to the parent and the learner</b>, and to the mentor who raised it.
+                Only the designated safeguarding lead can read it. That is not secrecy for its own sake: a
+                concern may be about an adult in the child&rsquo;s life, and it has to be able to reach somebody who
+                is not that adult.
+            </li>
+            <li>
+                <b>It cannot silently stop.</b> If a concern cannot be routed to anybody, the system refuses
+                to save the note at all and tells the person reporting it to phone instead. A concern that
+                looked filed but reached nobody would be the worst failure we could have, so we made it
+                impossible rather than unlikely.
+            </li>
+        </ol>
+        <p class="lede">
+            Our designated safeguarding lead is not a programme staff member, and there is exactly one of
+            them — the system will not allow a second, so there is never any doubt about who is responsible.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">Learners talking to each other</h2>
+        <p class="lede">
+            Our app has a study-buddy feature, because working with somebody helps. It also has three rules
+            built into it:
+        </p>
+        <ul style="font-size:16px;line-height:1.8">
+            <li>A learner can <b>request</b> a study buddy. Only a mentor or a staff member can approve one.</li>
+            <li>There is <b>no private messaging between learners</b> anywhere in the app. Not restricted, not moderated — it does not exist.</li>
+            <li>Peer groups are created and approved by staff, and joining one is also approved rather than automatic.</li>
+        </ul>
+        <p class="lede">
+            Learners are shown to each other by first name, surname initial, grade and suburb — enough to
+            recognise somebody from a Saturday session, and not enough to identify a stranger&rsquo;s child.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">What parents can always see</h2>
+        <p class="lede">
+            A parent or guardian can see their own child&rsquo;s attendance, marks, badges, mentor notes and the
+            permission forms awaiting their answer — and nothing about any other child. That boundary is
+            resolved against the guardian record our staff created at enrolment, not against a claim made by
+            the person signing in.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">Photographs</h2>
+        <p class="lede">
+            We do not publish a learner&rsquo;s photograph or name on this website. Learners appear on our
+            Sponsor a Child page as a reference code only. Where we photograph an event for our own
+            newsletter, we do so with written consent recorded against the child&rsquo;s record, and that consent
+            can be withdrawn at any time.
+        </p>
+
+        <h2 class="d4" style="margin-top:40px">Reporting a concern</h2>
+        <div class="card card--gold pad" style="margin-top:18px">
+            <p style="margin:0;font-size:15px;line-height:1.7;color:var(--gold-d)">
+                <b>Safeguarding lead</b><br>
+                @if (Configuration["Safeguarding:Phone"] is { Length: > 0 } leadPhone)
+                {
+                    <a href="tel:@SiteFormat.TelHref(leadPhone)" style="color:inherit">@leadPhone</a><br>
+                }
+                <a href="mailto:safeguarding@@theebuhlefoundation.co.za" style="color:inherit">safeguarding@@theebuhlefoundation.co.za</a><br>
+                Or use the <a href="/contact?topic=concern" style="color:inherit">contact form</a> and choose
+                <b>Report a concern</b> — it goes directly to the lead and is not seen by programme staff.
+            </p>
+        </div>
+        <div class="card pad" style="margin-top:14px">
+            <p style="margin:0;font-size:15px;line-height:1.7">
+                <b>Childline South Africa: <a href="tel:116">116</a></b><br>
+                Free from any phone, 24 hours a day. For a child who needs to talk to someone, or an adult
+                worried about a child, at any time, including when we are closed.
+            </p>
+        </div>
+        <p class="lede" style="margin-top:22px">
+            You do not have to be certain, and you do not have to be a parent. If something concerns you about
+            a child in our programmes, tell us and let us look into it.
+        </p>
+
+        <p class="dim" style="margin-top:40px;font-size:13px">
+            Related: our <a href="/privacy">privacy policy</a>, which sets out exactly what we hold about a
+            learner and for how long.
+        </p>
+    </div>
+</section>

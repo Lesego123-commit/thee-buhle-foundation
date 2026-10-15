@@ -1,0 +1,317 @@
+@page "/donate"
+@model DonateModel
+@{
+    var sponsoring = Model.SponsorReference is not null;
+}
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Donate</p>
+    <h1 class="d2" style="max-width:20ch">Give once. Give monthly. Or walk a whole year with one child.</h1>
+    <p class="lede">
+        Every rand is receipted and every allocation is published. Below is exactly where the money
+        went last year, and what a new donation buys today.
+    </p>
+</header>
+
+<section class="band band--white">
+    <div class="grid split" style="grid-template-columns:460px 1fr;gap:64px;align-items:start">
+
+        @*
+            There is no card number, expiry or CVV field in this form, and no
+            hidden one either. The payment provider's own page collects those,
+            on its own domain, after this form has been accepted — so this site
+            is never in possession of a card detail to leak.
+        *@
+        <form class="card card--cream pad" id="donateForm" data-widget="donation" novalidate>
+            <h2 class="d4">Make a donation</h2>
+            <p class="dim" style="font-size:13px;margin:6px 0 22px">Step 1 of 2 — choose your gift</p>
+
+            <p class="notice" data-notice hidden></p>
+
+            <fieldset>
+                <legend class="visually-hidden">How often would you like to give?</legend>
+                <div class="chipset" style="gap:0;background:#fff;border:1px solid var(--line);padding:4px" data-no-toggle>
+                    <button type="button" class="tog" data-freq="once" aria-pressed="false"
+                            style="flex:1;border:none;background:none">Once-off</button>
+                    <button type="button" class="tog" data-freq="monthly" aria-pressed="@(sponsoring ? "false" : "true")"
+                            style="flex:1;border:none">Monthly</button>
+                    <button type="button" class="tog" data-freq="sponsor" aria-pressed="@(sponsoring ? "true" : "false")"
+                            style="flex:1;border:none">Sponsor a child</button>
+                </div>
+            </fieldset>
+
+            <fieldset style="margin-top:22px">
+                <legend class="alabel" style="margin:0 0 10px">Choose an amount</legend>
+                <div class="grid g3" style="gap:10px" data-amountset>
+                    @foreach (var amount in new[] { 150, 250, 600 })
+                    {
+                        <button type="button" class="amt card tog" data-amt="@amount"
+                                aria-pressed="@(amount == 250 ? "true" : "false")"
+                                style="padding:14px 6px;text-align:center;display:block">
+                            <b class="num" style="display:block;font-size:17px;font-weight:650">@SiteFormat.Rands(amount)</b>
+                            <span class="amt-sub">per month</span>
+                        </button>
+                    }
+                </div>
+                <label class="f" style="margin-top:10px">
+                    <span class="visually-hidden">Another amount, in rand</span>
+                    <input class="input" id="otherAmount" type="number" min="10" step="10"
+                           placeholder="Other amount (R)" inputmode="numeric">
+                </label>
+            </fieldset>
+
+            @*
+                Rewritten by site.js from the copy the API serves, so the
+                website, the receipt email and the app all describe the same
+                gift in the same words.
+            *@
+            <div style="background:var(--mist);padding:16px 18px;margin-top:18px;display:flex;gap:10px" data-readout>
+                <span style="color:var(--forest);font-weight:700" aria-hidden="true">✓</span>
+                <p style="margin:0;font-size:13px;line-height:1.5;color:var(--forest)">
+                    <b>R250 a month</b> keeps one learner in Saturday tutoring for a full year.
+                </p>
+            </div>
+
+            <div id="sponsorPicker" hidden="@(sponsoring ? null : "hidden")" style="margin-top:18px">
+                <label class="f">
+                    <span>Which learner would you like to sponsor?<span class="req" aria-hidden="true">*</span></span>
+                    <select class="input" name="learnerReference">
+                        <option value="">Choose a learner</option>
+                        @foreach (var card in Model.SponsorCards)
+                        {
+                            var chosen = string.Equals(card.ReferenceCode, Model.SponsorReference, StringComparison.OrdinalIgnoreCase);
+
+                            <option value="@card.ReferenceCode" selected="@(chosen ? "selected" : null)">
+                                @card.ReferenceCode — Grade @card.Grade, @card.Suburb
+                            </option>
+                        }
+                    </select>
+                    <span class="hint">
+                        Learners are identified by a reference code. Names are shared with a sponsor only after a
+                        sponsorship is confirmed and with the guardian&rsquo;s written consent.
+                    </span>
+                    <span class="field-error" data-error-for="learnerReference"></span>
+                </label>
+            </div>
+
+            <div class="grid" style="gap:12px;margin-top:18px">
+                <label class="f">
+                    <span>Full name<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="displayName" type="text" required autocomplete="name" placeholder="Lesego Masike">
+                    <span class="field-error" data-error-for="displayName"></span>
+                </label>
+                <label class="f">
+                    <span>Email address<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="email" type="email" required autocomplete="email" placeholder="lesego@@email.co.za">
+                    <span class="hint">@(Registration.CanIssueCertificates ? "Your receipt and Section 18A certificate go here." : "Your receipt goes here.")</span>
+                    <span class="field-error" data-error-for="email"></span>
+                </label>
+                <label class="f">
+                    <span>Mobile number <span class="dim" style="font-weight:400">(optional)</span></span>
+                    <input class="input" name="phone" type="tel" autocomplete="tel" placeholder="071 000 0000">
+                    <span class="field-error" data-error-for="phone"></span>
+                </label>
+            </div>
+
+            @* Offered only once the foundation's PBO and NPO numbers are configured:
+               a certificate without them is not one SARS accepts. *@
+            @if (Registration.CanIssueCertificates)
+            {
+                <label class="check" style="margin-top:14px">
+                    <input type="checkbox" name="wantsSection18A" checked>
+                    <span>Send me a Section 18A tax certificate</span>
+                </label>
+            }
+
+            <label class="check" style="margin-top:12px">
+                <input type="checkbox" name="consentPopia" required>
+                <span>
+                    I consent to Thee Buhle Foundation storing these details to process my donation and
+                    issue a receipt, in line with POPIA.<span class="req" aria-hidden="true">*</span>
+                </span>
+            </label>
+            <span class="field-error" data-error-for="consentPopia"></span>
+
+            <button class="btn btn--forest btn--block" style="margin-top:20px" type="submit">
+                Continue to secure payment &rarr;
+            </button>
+
+            <div class="chipset" style="margin-top:14px;gap:8px;align-items:center">
+                <span style="font-size:12px" aria-hidden="true">🔒</span>
+                <span class="chip chip--white">PayFast</span>
+                <span class="chip chip--white">SnapScan</span>
+                <span class="chip chip--white">EFT</span>
+                <span class="chip chip--white">Visa / Mastercard</span>
+            </div>
+            <p class="dim" style="font-size:11px;margin:12px 0 0">
+                Your card details are entered on our payment provider&rsquo;s secure site.
+                They are never sent to, or stored by, this website.
+            </p>
+        </form>
+
+        <div>
+            <p class="eyebrow">Full transparency</p>
+            <h2 class="d3" style="margin-top:16px">Where your money actually goes</h2>
+            <p class="lede" style="margin-top:14px">
+                Audited figures for the 2025 financial year. Our annual financial statements are published in
+                full and available to download.
+            </p>
+
+            <div style="margin-top:32px">
+                @foreach (var (label, amount, percent, colour) in DonateModel.Allocation)
+                {
+                    <div style="padding-bottom:22px">
+                        <div class="row" style="gap:16px;align-items:baseline;margin-bottom:10px">
+                            <b style="flex:1;font-size:15px;font-weight:500">@label</b>
+                            <span class="num quiet">@SiteFormat.Rands(amount)</span>
+                            <b class="num" style="color:@colour">@percent%</b>
+                        </div>
+                        <div class="bar"><i style="width:@percent%;background:@colour"></i></div>
+                    </div>
+                }
+            </div>
+
+            <div style="background:var(--cream);padding:30px">
+                <p class="alabel" style="margin:0 0 18px">What a single gift buys</p>
+                <div class="list">
+                    @foreach (var (amount, buys) in DonateModel.GiftLadder)
+                    {
+                        <div>
+                            <b class="num" style="width:80px;flex:none;font-family:var(--display);font-size:24px;font-weight:600;color:var(--gold)">@SiteFormat.Rands(amount)</b>
+                            <span class="quiet">@buys</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @*
+                A live figure, from completed donations only — a pending gateway
+                redirect must never appear in a published total.
+            *@
+            <div class="card card--forest pad" style="margin-top:26px">
+                <p class="alabel" style="color:var(--goldSoft);margin:0">Received so far</p>
+                @if (Model.Totals.Count == 0)
+                {
+                    @*
+                        Not "R0 across 0 completed gifts". A total of zero is
+                        almost always a deployment with no gateway callbacks yet
+                        rather than an organisation nobody has given to, and
+                        printing it as a figure says the second thing.
+                    *@
+                    <p class="quiet" style="color:rgba(255,255,255,.72);margin:10px 0 0">
+                        We publish this figure from completed donations only, so it appears here once the
+                        first gift has cleared our payment provider. A pending redirect is money nobody has
+                        sent yet.
+                    </p>
+                }
+                else
+                {
+                    <p style="margin:8px 0 0;font-family:var(--display);font-size:38px;font-weight:600;line-height:1">
+                        @SiteFormat.Rands(Model.Totals.Total)
+                    </p>
+                    <p class="quiet" style="color:rgba(255,255,255,.72);margin:6px 0 0">
+                        across @Model.Totals.Count completed @(Model.Totals.Count == 1 ? "gift" : "gifts"), of which
+                        @Model.Totals.MonthlyCount @(Model.Totals.MonthlyCount == 1 ? "is a monthly commitment" : "are monthly commitments")
+                    </p>
+                }
+            </div>
+
+            <div class="row" style="margin-top:26px">
+                <a class="btn btn--ghost btn--s" href="/impact">2025 annual financials</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="band band--cream" id="sponsor">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">Sponsor a child</p>
+            <h2 class="d3" style="margin-top:16px">Walk one full year with one learner</h2>
+            <p class="lede" style="margin-top:14px">
+                R1 800 a year — or R150 a month. You receive a termly progress report, and your learner writes
+                to you twice a year. Names and photographs are protected until a sponsorship is confirmed.
+            </p>
+        </div>
+    </div>
+
+    @if (Model.SponsorCards.Count == 0)
+    {
+        <div class="notice notice--info">
+            <span aria-hidden="true">🤝</span>
+            <div>
+                <b>Every learner on our list currently has a sponsor.</b>
+                Give monthly instead and we will write to you when the next sponsorship opens.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid g3">
+            @for (var i = 0; i < Model.SponsorCards.Count; i++)
+            {
+                var card = Model.SponsorCards[i];
+
+                <article class="card" style="overflow:hidden">
+                    <div class="ph" style="height:200px;background:@DonateModel.GradientFor(i)">Photo · learner identity protected</div>
+                    <div class="pad-s" style="padding:26px">
+                        <h3 class="d5" style="font-size:26px">Learner @card.ReferenceCode</h3>
+                        <p style="margin:5px 0 12px;font-size:12px;font-weight:600;color:var(--gold)">
+                            Grade @card.Grade@(card.Suburb is null ? "" : " · " + card.Suburb)
+                        </p>
+                        @if (!string.IsNullOrWhiteSpace(card.Ambition))
+                        {
+                            <p class="quiet" style="margin:0 0 18px">@card.Ambition</p>
+                        }
+                        <p style="margin:0 0 18px">
+                            <b class="num" style="font-size:18px;font-weight:650;color:var(--forest)">@card.AttendanceRate%</b>
+                            <span class="dim" style="font-size:12px">attendance</span>
+                        </p>
+                        @*
+                            A link, not a click handler. The policy this site
+                            sends forbids inline script, so the prototype's
+                            onclick would have looked fine and done nothing —
+                            and a query string is shareable besides.
+                        *@
+                        <a class="btn btn--forest btn--block"
+                           href="/donate?sponsor=@Uri.EscapeDataString(card.ReferenceCode)#donateForm">
+                            Sponsor this learner
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+
+    <p class="quiet" style="margin-top:32px;max-width:70ch">
+        <b>Why there are no names or photographs here.</b> Learners are identified publicly by a reference
+        code only. A sponsor is introduced to their learner by name after the sponsorship is confirmed, and
+        only where the learner&rsquo;s guardian has given written consent. Learners who already have a sponsor
+        are not shown, so this page cannot be used to work out who is sponsored.
+    </p>
+</section>
+
+<section class="band band--white">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">Before you give</p>
+            <h2 class="d3" style="margin-top:16px">Questions donors ask us most</h2>
+        </div>
+    </div>
+
+    <div>
+        @for (var i = 0; i < Model.Questions.Count; i++)
+        {
+            var (question, answer) = Model.Questions[i];
+            var open = i == 0;
+
+            <div class="acc@(open ? " is-open" : "")">
+                <button type="button" aria-expanded="@(open ? "true" : "false")">
+                    <span>@question</span>
+                    <span aria-hidden="true">@(open ? "−" : "+")</span>
+                </button>
+                <div class="acc-body">@answer</div>
+            </div>
+        }
+    </div>
+</section>

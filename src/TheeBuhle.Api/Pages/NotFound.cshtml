@@ -1,0 +1,23 @@
+@page "/not-found"
+@model NotFoundModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a></p>
+    <h1 class="d2">We could not find that page</h1>
+    <p class="lede">
+        It may have moved, or the link may be out of date. Here is where most people are heading.
+    </p>
+</header>
+
+<section class="band band--white">
+    <div class="grid g4">
+        @foreach (var (heading, body, href) in NotFoundModel.Destinations)
+        {
+            <a class="card pad" href="@href" style="text-decoration:none">
+                <h2 class="d5">@heading</h2>
+                <p class="quiet" style="margin:10px 0 0">@body</p>
+                <p style="margin:16px 0 0;font-size:12.5px;font-weight:650;color:var(--gold)">Go there &rarr;</p>
+            </a>
+        }
+    </div>
+</section>

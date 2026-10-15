@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/homeFragment" android:icon="@drawable/ic_home" android:title="@string/nav_home" />
+    <item android:id="@+id/learnFragment" android:icon="@drawable/ic_learn" android:title="@string/nav_learn" />
+    <item android:id="@+id/buddiesFragment" android:icon="@drawable/ic_buddies" android:title="@string/nav_buddies" />
+    <item android:id="@+id/progressFragment" android:icon="@drawable/ic_progress" android:title="@string/nav_progress" />
+    <item android:id="@+id/messagesFragment" android:icon="@drawable/ic_messages" android:title="@string/nav_messages" />
+</menu>

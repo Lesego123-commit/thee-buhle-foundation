@@ -1,0 +1,59 @@
+@page "/programmes/{slug}"
+@model ProgrammeModel
+@{
+    var programme = Model.Programme;
+}
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › <a href="/programmes">Programmes</a> › @programme.Name</p>
+    <div class="row" style="gap:12px;margin-bottom:14px">
+        <span style="font-family:var(--display);font-size:22px;font-weight:600;color:var(--goldSoft)">@programme.Number</span>
+        @if (!string.IsNullOrWhiteSpace(programme.Audience))
+        {
+            <span class="chip chip--gold">@programme.Audience</span>
+        }
+        <span class="chip chip--mist">Grades @programme.MinGrade–@programme.MaxGrade</span>
+    </div>
+    <h1 class="d2" style="max-width:22ch">@programme.Name</h1>
+    <p class="lede">@programme.Summary</p>
+</header>
+
+<section class="band band--white">
+    <div class="grid split" style="grid-template-columns:1fr 380px;gap:64px;align-items:start">
+        <div>
+            <p class="lede" style="font-size:18px">@programme.Description</p>
+
+            @if (programme.Expectations.Count > 0)
+            {
+                <h2 class="d4" style="margin-top:40px">What participants can expect</h2>
+                <ul style="margin:18px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:12px;font-size:16px;line-height:1.6">
+                    @foreach (var expectation in programme.Expectations)
+                    {
+                        <li>@expectation</li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <aside class="card card--cream pad">
+            @if (!string.IsNullOrWhiteSpace(programme.CapacityNote))
+            {
+                <p class="alabel" style="margin:0 0 6px">Availability</p>
+                <p style="margin:0 0 22px;font-size:15px;font-weight:600;color:var(--forest)">@programme.CapacityNote</p>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(programme.HowToJoin))
+            {
+                <p class="alabel" style="margin:0 0 6px">How to join</p>
+                <p class="quiet" style="margin:0 0 22px">@programme.HowToJoin</p>
+            }
+
+            <div class="stack">
+                <a class="btn btn--forest btn--block" href="/contact?topic=enrol">@(programme.CtaLabel ?? "Register a learner")</a>
+                <a class="btn btn--ghost btn--block" href="/programmes">All four programmes</a>
+            </div>
+
+            <p class="dim" style="font-size:12px;margin:18px 0 0;text-align:center">This programme is free to learners.</p>
+        </aside>
+    </div>
+</section>

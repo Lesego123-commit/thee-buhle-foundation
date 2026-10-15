@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="za.co.theebuhlefoundation.ui.signin.SignInFragment"
+        android:label="@string/sign_in_title">
+        <action android:id="@+id/toActivate" app:destination="@id/activateFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/activateFragment"
+        android:name="za.co.theebuhlefoundation.ui.activate.ActivateFragment"
+        android:label="@string/activate_title" />
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="za.co.theebuhlefoundation.ui.home.HomeFragment"
+        android:label="@string/nav_home">
+        <action android:id="@+id/toProgress" app:destination="@id/progressFragment" />
+        <action android:id="@+id/toMessages" app:destination="@id/messagesFragment" />
+        <action android:id="@+id/toNotifications" app:destination="@id/notificationsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/learnFragment"
+        android:name="za.co.theebuhlefoundation.ui.learn.LearnFragment"
+        android:label="@string/nav_learn">
+        <action android:id="@+id/toSubject" app:destination="@id/subjectFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/subjectFragment"
+        android:name="za.co.theebuhlefoundation.ui.subject.SubjectFragment"
+        android:label="@string/subject_title">
+        <argument android:name="subjectId" app:argType="string" />
+        <argument android:name="subjectName" app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/progressFragment"
+        android:name="za.co.theebuhlefoundation.ui.progress.ProgressFragment"
+        android:label="@string/nav_progress">
+        <action android:id="@+id/toBadges" app:destination="@id/badgesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/badgesFragment"
+        android:name="za.co.theebuhlefoundation.ui.badges.BadgesFragment"
+        android:label="@string/badges_title" />
+
+    <fragment
+        android:id="@+id/buddiesFragment"
+        android:name="za.co.theebuhlefoundation.ui.buddies.BuddiesFragment"
+        android:label="@string/nav_buddies" />
+
+    <fragment
+        android:id="@+id/messagesFragment"
+        android:name="za.co.theebuhlefoundation.ui.messages.MessagesFragment"
+        android:label="@string/nav_messages" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="za.co.theebuhlefoundation.ui.notifications.NotificationsFragment"
+        android:label="@string/nav_alerts" />
+
+    <fragment
+        android:id="@+id/menteesFragment"
+        android:name="za.co.theebuhlefoundation.ui.mentees.MenteesFragment"
+        android:label="@string/nav_mentees">
+        <action android:id="@+id/toCheckIn" app:destination="@id/checkInFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/checkInFragment"
+        android:name="za.co.theebuhlefoundation.ui.checkin.CheckInFragment"
+        android:label="@string/check_in_title">
+        <argument android:name="assignmentId" app:argType="string" />
+        <argument android:name="learnerName" app:argType="string" />
+    </fragment>
+</navigation>

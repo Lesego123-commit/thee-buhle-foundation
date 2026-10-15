@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="streak_sessions">
+        <item quantity="one">%d session in a row</item>
+        <item quantity="other">%d sessions in a row</item>
+    </plurals>
+
+    <plurals name="mentee_days_ago">
+        <item quantity="one">Last check-in %d day ago</item>
+        <item quantity="other">Last check-in %d days ago</item>
+    </plurals>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The light panel the sign-in and activation fields sit on. Field labels and
+    error messages both land on a light surface, so the standard error red
+    passes contrast in both places; on the dark screen itself no single red
+    could (under 4.5:1 on either the white box or the ink background).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/cream" />
+    <corners android:radius="6dp" />
+</shape>

@@ -1,0 +1,69 @@
+@page "/activate"
+@model ActivateModel
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Use your code</p>
+    <h1 class="d2">Use your code</h1>
+    <p class="lede">
+        The foundation gave you a one-time code, either to set up a new account or because you asked
+        for a password reset. Enter it here with your email address and choose your password.
+    </p>
+</header>
+
+<section class="band band--cream">
+    <div class="grid split" style="grid-template-columns:1fr 340px;gap:56px;align-items:start">
+        <form class="card pad" id="activateForm" novalidate>
+            <h2 class="d4">Set your password</h2>
+            <p class="notice" data-notice hidden></p>
+
+            <label class="f" style="margin-top:16px">
+                <span>Email address<span class="req" aria-hidden="true">*</span></span>
+                <input class="input" name="email" type="email" required autocomplete="username">
+                <span class="hint">The address the foundation has for you.</span>
+                <span class="field-error" data-error-for="email"></span>
+            </label>
+
+            <label class="f" style="margin-top:16px">
+                <span>Your code<span class="req" aria-hidden="true">*</span></span>
+                <input class="input num" name="code" type="text" required autocomplete="one-time-code"
+                       autocapitalize="characters" spellcheck="false" placeholder="K7MPQ-2XRT9" style="letter-spacing:.1em">
+                <span class="hint">Ten letters and numbers. Capitals, spaces and the dash do not matter.</span>
+                <span class="field-error" data-error-for="code"></span>
+            </label>
+
+            <div class="grid g2" style="gap:16px;margin-top:16px">
+                <label class="f">
+                    <span>New password<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="newPassword" type="password" required minlength="12" autocomplete="new-password">
+                    <span class="hint">At least 12 characters. A short sentence is easy to remember.</span>
+                    <span class="field-error" data-error-for="newPassword"></span>
+                </label>
+                <label class="f">
+                    <span>Type it again<span class="req" aria-hidden="true">*</span></span>
+                    <input class="input" name="confirmPassword" type="password" required autocomplete="new-password">
+                    <span class="field-error" data-error-for="confirmPassword"></span>
+                </label>
+            </div>
+
+            <button class="btn btn--forest" style="margin-top:22px" type="submit">Set my password</button>
+        </form>
+
+        <aside class="stack" style="gap:18px">
+            <div class="card pad-s">
+                <h2 class="d5">No code?</h2>
+                <p style="margin:8px 0 0;font-size:14px;line-height:1.6">
+                    Accounts are created by the foundation, not by signing up, because they show a child&rsquo;s
+                    records. If your child is in one of our programmes, <a href="/contact">contact us</a> and we
+                    will add you.
+                </p>
+            </div>
+            <div class="card pad-s">
+                <h2 class="d5">Forgot your password?</h2>
+                <p style="margin:8px 0 0;font-size:14px;line-height:1.6">
+                    <a href="/contact">Contact us</a>. Once we have confirmed it is you, we will give you a reset
+                    code to use on this page. A code works once, and signs you out everywhere else.
+                </p>
+            </div>
+        </aside>
+    </div>
+</section>

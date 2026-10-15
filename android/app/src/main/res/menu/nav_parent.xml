@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A parent's tabs.
+    
+    No Buddies: the whole peers area of the API is learner-only, so a parent
+    tapping that tab would get "You do not have permission to do that" — which
+    is the API behaving correctly and the app asking a question it had no
+    business asking.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/homeFragment" android:icon="@drawable/ic_home" android:title="@string/nav_home" />
+    <item android:id="@+id/learnFragment" android:icon="@drawable/ic_learn" android:title="@string/nav_learn" />
+    <item android:id="@+id/progressFragment" android:icon="@drawable/ic_progress" android:title="@string/nav_progress" />
+    <item android:id="@+id/messagesFragment" android:icon="@drawable/ic_messages" android:title="@string/nav_messages" />
+</menu>

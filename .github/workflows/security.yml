@@ -1,0 +1,196 @@
+# =============================================================================
+#  Security scanning.
+#
+#  Three checks that catch different things, which is why they are three jobs
+#  rather than one:
+#
+#    codeql        static analysis for vulnerability patterns — an injection
+#                  path, a hard-coded credential, an unsafe deserialisation.
+#                  Finds things nobody wrote a test for.
+#
+#    dependencies  known vulnerabilities in packages we did not write. The most
+#                  likely source of a real vulnerability in a project this size,
+#                  and the one nobody notices without a tool.
+#
+#    secrets       a credential committed by accident. Runs on the full history
+#                  on a schedule, because a secret removed in a later commit is
+#                  still in the history and still needs rotating.
+#
+#  The weekly schedule matters as much as the per-push run. A dependency that
+#  was clean on Friday can have a published advisory by Monday without anybody
+#  touching this repository — so a check that only runs on push would never see
+#  it.
+# =============================================================================
+
+name: Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # 03:00 UTC on Monday, which is 05:00 in Johannesburg — a result waiting at
+    # the start of the week rather than one that arrives mid-Friday.
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      # Required to upload the results so they appear in the Security tab rather
+      # than only in a log nobody opens.
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Three languages: C# for the API, JavaScript because a DOM-based XSS
+        # in the staff console would be invisible to a C#-only scan, and Kotlin
+        # because the Android app is a deliverable that handles tokens and
+        # learner data.
+        language: ['csharp', 'javascript-typescript', 'java-kotlin']
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # security-and-quality rather than the default security-only. The
+          # quality rules catch the near-misses that become vulnerabilities
+          # later — a comparison that is always true, a disposed object used
+          # again.
+          queries: security-and-quality
+
+      # CodeQL analyses what the compiler produced, so the build has to happen
+      # inside the scan rather than being restored from an artefact.
+      - name: Set up the JDK
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build
+        if: matrix.language == 'csharp'
+        run: dotnet build TheeBuhle.slnx -c Release
+
+      - name: Build the Android app
+        if: matrix.language == 'java-kotlin'
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Analyse
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}
+
+  # ---------------------------------------------------------------------------
+  dependencies:
+    name: Vulnerable packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore TheeBuhle.slnx
+
+      # --include-transitive is the important flag. A vulnerability is far more
+      # likely to be three levels down in something a package we chose depends
+      # on than in a package we chose directly — and the default output hides
+      # exactly those.
+      #
+      # The grep is how this becomes a gate rather than a report: `dotnet list
+      # package --vulnerable` exits 0 whether or not it found anything, so
+      # without this the job would be green while printing a critical advisory.
+      - name: Check for vulnerable packages
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee ./vulnerable.txt
+
+          if grep -qiE '^\s*>\s' ./vulnerable.txt; then
+            echo "::error::Vulnerable packages found — see the output above."
+            exit 1
+          fi
+
+          echo "No known vulnerabilities."
+
+      # Deprecated is a warning rather than a failure. A deprecated package is
+      # not a vulnerability, and failing the build for one would train people to
+      # ignore this job — which is the last thing a security workflow should do.
+      - name: Report deprecated packages
+        continue-on-error: true
+        run: dotnet list package --deprecated --include-transitive
+
+      # There is no npm advisory check here any more, and its absence is
+      # deliberate rather than an oversight.
+      #
+      # The React Native app this project used to carry brought 33 outstanding
+      # high and critical advisories, every one of them in the build toolchain —
+      # Metro, the Expo CLI, tar, cacache, postcss. None of it ran on a
+      # learner's phone, none of it could be fixed without a major Expo
+      # upgrade, and the job that watched it existed only to tell the
+      # difference between that known state and a new one.
+      #
+      # The Android app has no npm dependency tree at all. Its own dependencies
+      # are pinned in gradle/libs.versions.toml, CodeQL scans its Kotlin above,
+      # and Dependabot raises pull requests against the version catalogue.
+
+      - name: Keep the dependency report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: ./vulnerable.txt
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  secrets:
+    name: Committed secrets
+    runs-on: ubuntu-latest
+
+    steps:
+      # fetch-depth: 0 for the full history. A secret that was committed and
+      # then removed is still in the history and still has to be rotated — so
+      # scanning only the current tree would miss the case that matters most.
+      - name: Check out the full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

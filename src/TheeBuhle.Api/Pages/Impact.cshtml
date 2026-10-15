@@ -1,0 +1,239 @@
+@page "/impact"
+@model ImpactModel
+@{
+    var headlines = Model.Snapshot.Headlines;
+    var programmes = Model.Snapshot.Programmes;
+    var subjects = Model.Snapshot.Subjects;
+}
+
+<header class="banner">
+    <p class="crumb"><a href="/">Home</a> › Impact</p>
+    <h1 class="d2" style="max-width:20ch">The numbers, and the people inside them</h1>
+    <p class="lede">
+        Every figure below comes from our own attendance registers and from school-issued results.
+        Where we fell short, we have said so.
+    </p>
+</header>
+
+<section class="band band--white band--tight">
+    @if (headlines.Count == 0)
+    {
+        @*
+            An explicit empty state rather than a row of blanks. A page of
+            em-dashes looks broken; this says what is true — the snapshot has
+            not been computed yet.
+        *@
+        <div class="notice notice--info">
+            <span aria-hidden="true">📊</span>
+            <div>
+                <b>The figures for this school year have not been published yet.</b>
+                They are recomputed from our registers each night.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="statrow statrow--light">
+            @foreach (var headline in headlines)
+            {
+                <div>
+                    <b class="num">@headline.ValueText</b>
+                    <em>@headline.Label</em>
+                    @if (!string.IsNullOrWhiteSpace(headline.Footnote))
+                    {
+                        <small>@headline.Footnote</small>
+                    }
+                </div>
+            }
+        </div>
+
+        <p class="dim" style="font-size:12.5px;margin-top:30px">
+            @Model.Snapshot.SchoolYear school year · computed from our own records and last updated
+            @headlines[0].ComputedAt.ToString("d MMMM yyyy").
+            These figures are published from a nightly snapshot rather than calculated as you load the page,
+            so a register still being captured on a Saturday morning can never appear here as a drop.
+        </p>
+    }
+</section>
+
+@if (subjects.Count > 0)
+{
+    <section class="band band--cream">
+        <div class="grid split" style="grid-template-columns:1fr 400px;gap:64px;align-items:start">
+            <div>
+                <p class="eyebrow">Academic outcomes</p>
+                <h2 class="d3" style="margin-top:16px">Average mark improvement by subject</h2>
+                <p class="lede" style="margin-top:14px">
+                    Comparing each learner&rsquo;s first recorded school mark to their most recent one, for
+                    learners with more than one result on file. Only school-issued marks are counted — our own
+                    practice tests are not.
+                </p>
+
+                <div style="margin-top:34px">
+                    @foreach (var subject in subjects)
+                    {
+                        @*
+                            The sign is shown explicitly, including when it is
+                            negative. A subject that has gone backwards is the
+                            one a reader most needs to see, and the whole
+                            calculation is by term precisely so that it can.
+                        *@
+                        var improvement = subject.AverageImprovement;
+                        var colour = improvement < 0 ? "var(--clay)" : "var(--forest)";
+
+                        <div style="padding-bottom:20px">
+                            <div class="row" style="align-items:baseline;gap:12px;margin-bottom:9px">
+                                <b style="flex:1;font-size:15px;font-weight:500">@subject.SubjectName</b>
+                                <span class="dim" style="font-size:12px">@subject.LearnerCount learners</span>
+                                <b class="num" style="color:@colour">@improvement.ToString("+0.#;-0.#;0") points</b>
+                            </div>
+                            <div class="bar" style="height:10px;background:#EDE5D6">
+                                <i style="width:@(Model.BarWidthFor(subject))%;@(improvement < 0 ? "background:var(--clay)" : "")"></i>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card pad">
+                <h2 class="d5">Where we fell short</h2>
+                <p class="dim" style="font-size:12px;margin:4px 0 22px">Published alongside the good news</p>
+
+                <div class="card card--gold pad-s">
+                    <p class="alabel" style="color:var(--gold-d);margin:0 0 8px">Transport</p>
+                    <p style="margin:0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                        Attendance drops whenever taxi fares increase. Transport subsidies are our single biggest
+                        funding gap, and it shows in the attendance figure above rather than being hidden in it.
+                    </p>
+                </div>
+
+                <div class="card card--gold pad-s" style="margin-top:14px">
+                    <p class="alabel" style="color:var(--gold-d);margin:0 0 8px">Capacity</p>
+                    <p style="margin:0;font-size:13px;line-height:1.6;color:var(--gold-d)">
+                        The Sebokeng Saturday session is full. We opened a parallel session in Bophelong, and we
+                        still have learners on a waiting list for mentors.
+                    </p>
+                </div>
+
+                <a class="btn btn--ghost btn--block btn--s" style="margin-top:22px" href="/donate">
+                    Help close the transport gap
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+@if (programmes.Count > 0)
+{
+    <section class="band band--white">
+        <div class="head">
+            <div class="grow">
+                <p class="eyebrow">Programme by programme</p>
+                <h2 class="d3" style="margin-top:16px">What each programme delivered</h2>
+            </div>
+        </div>
+
+        <div class="tablewrap" tabindex="0" role="region" aria-label="Attendance per programme">
+            <table>
+                <caption>Learners, sessions held and average attendance per programme, from the attendance registers.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Programme</th>
+                        <th scope="col">Learners</th>
+                        <th scope="col">Sessions</th>
+                        <th scope="col">Average attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var programme in programmes)
+                    {
+                        <tr>
+                            <th scope="row">@programme.Name</th>
+                            <td class="num">@programme.Learners</td>
+                            <td class="num">@programme.SessionsHeld</td>
+                            <td class="num" style="color:var(--forest);font-weight:650">
+                                @*
+                                    "no sessions yet" rather than 0%. A
+                                    programme that has not run is not a
+                                    programme with nobody attending, and
+                                    reporting it as 0% would be a worse figure
+                                    than the truth.
+                                *@
+                                @if (programme.SessionsHeld == 0)
+                                {
+                                    <span class="dim" style="font-weight:400">no sessions yet</span>
+                                }
+                                else
+                                {
+                                    <text>@programme.AverageAttendance%</text>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<section class="band band--forest">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">In their words</p>
+            <h2 class="d3" style="margin-top:16px;color:#fff">What learners, parents and mentors say</h2>
+        </div>
+    </div>
+
+    <div class="grid g3">
+        @foreach (var (quote, name, role) in new[]
+        {
+            ("I came for maths. I stayed because someone finally asked me what I wanted to do after school.", "Thandi M.", "Grade 12 learner, Sebokeng"),
+            ("My son’s teacher asked what changed. I told her: someone shows up for him every Saturday.", "Nomsa D.", "Parent, Grade 11 learner"),
+            ("Two hours a week. I have never spent two hours better in my life.", "Sipho K.", "Mentor since 2024, engineer"),
+        })
+        {
+            <figure style="background:rgba(255,255,255,.07);padding:32px 30px;margin:0">
+                <blockquote style="font-family:var(--display);font-size:24px;line-height:1.42;margin:0 0 22px">
+                    &ldquo;@quote&rdquo;
+                </blockquote>
+                <figcaption class="row" style="gap:12px">
+                    <div class="ph" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#A87C32,#C2A870)"></div>
+                    <div>
+                        <b style="font-size:13px">@name</b>
+                        <p style="margin:0;font-size:11px;color:var(--goldSoft)">@role</p>
+                    </div>
+                </figcaption>
+            </figure>
+        }
+    </div>
+</section>
+
+<section class="band band--cream">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">How we count what we count</p>
+            <h2 class="d3" style="margin-top:16px">Our method, in plain terms</h2>
+        </div>
+    </div>
+
+    @*
+        The method, stated publicly. A figure whose definition is not published
+        is a claim rather than a measurement — and each of these definitions is
+        the one the code actually implements, including the parts that make the
+        numbers look worse.
+    *@
+    <div class="grid g3">
+        @foreach (var (heading, body) in new[]
+        {
+            ("Attendance", "A learner is counted as attending if a staff member marked them present or late on a register for a session they were enrolled in. Every register entry records who captured it. An “excused” absence is still an absence in the figures."),
+            ("Mark improvement", "The difference between a learner’s first and most recent school-issued mark in a subject, in the same school year, for learners with more than one result on file. By term, not by best and worst — so a subject that has gone backwards shows a negative number. Our own practice tests are excluded so that we are not marking our own homework."),
+            ("Tutoring hours", "Attended sessions multiplied by each session’s own scheduled length, so a three-hour Saturday and a two-hour workshop are not counted as the same thing."),
+        })
+        {
+            <div class="card pad">
+                <h3 class="d5">@heading</h3>
+                <p class="quiet" style="margin:12px 0 0">@body</p>
+            </div>
+        }
+    </div>
+</section>

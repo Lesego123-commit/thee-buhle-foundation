@@ -1,0 +1,291 @@
+@page "/"
+@model IndexModel
+@{
+    var learners = Model.Metric("learners_supported");
+    var mentors = Model.Metric("active_mentors");
+    var attendance = Model.Metric("attendance_rate");
+}
+
+<section class="hero">
+    <p class="cap">Photo · Learners at a Saturday tutoring session</p>
+    <p class="eyebrow" style="color:var(--goldSoft)">Vanderbijlpark &nbsp;·&nbsp; Gauteng &nbsp;·&nbsp; South Africa</p>
+    <h1 class="d1" style="margin-top:22px;max-width:14ch">Giving back, one child at a time &amp; beyond</h1>
+    <p class="lede" style="color:rgba(255,255,255,.86);margin-top:20px;max-width:46ch">
+        Thee Buhle Foundation walks alongside young people in the Vaal — with tutoring, mentorship
+        and life-skills that outlast a single school year.
+    </p>
+    <div class="row" style="margin-top:36px">
+        <a class="btn btn--light" href="/donate">Donate now</a>
+        <a class="btn btn--ghostL" href="/volunteer">Become a volunteer</a>
+    </div>
+
+    @*
+        Live figures from the published impact metrics, not typed into the
+        template. data-live-impact lets the browser refresh them without a
+        reload; the server-rendered value is what a visitor sees first.
+    *@
+    <div class="hero-ribbon">
+        <div>
+            <b class="num" data-live-impact="learners_supported">@(learners?.ValueText ?? "—")</b>
+            <span>learners supported</span>
+        </div>
+        <div>
+            <b class="num" data-live-impact="active_mentors">@(mentors?.ValueText ?? "—")</b>
+            <span>active mentors</span>
+        </div>
+        <div>
+            <b class="num" data-live-impact="attendance_rate">@(attendance?.ValueText ?? "—")</b>
+            <span>overall attendance</span>
+        </div>
+    </div>
+</section>
+
+<section class="values">
+    <div>
+        <h2 class="d4">Community</h2>
+        <p class="quiet" style="margin:12px 0 0">We start with the street, the school and the family a child already belongs to.</p>
+    </div>
+    <div>
+        <h2 class="d4">Compassion</h2>
+        <p class="quiet" style="margin:12px 0 0">Every learner is met where they are — no judgement, no waiting list for kindness.</p>
+    </div>
+    <div>
+        <h2 class="d4">Change</h2>
+        <p class="quiet" style="margin:12px 0 0">Support that compounds: better marks, steadier confidence, wider horizons.</p>
+    </div>
+</section>
+
+<section class="band band--cream">
+    <div class="grid split" style="grid-template-columns:460px 1fr;gap:72px;align-items:center">
+        <div>
+            <div class="ph" style="height:520px;background:linear-gradient(150deg,#8B7A55,#2E4034)">Photo · Founder portrait</div>
+        </div>
+        <div class="prose">
+            <p class="eyebrow">A message from our founder</p>
+            <h2 class="d3" style="margin-top:18px;max-width:20ch">&ldquo;Buhle&rdquo; means beauty. We look for it in every child we meet.</h2>
+            <p class="lede" style="margin-top:24px">
+                Thee Buhle Foundation started with a simple frustration: bright learners in our community were
+                falling behind for reasons that had nothing to do with ability. No quiet place to study. No one to
+                ask when a maths problem stopped making sense. No adult who could say &ldquo;I have walked this
+                road, and you can too.&rdquo;
+            </p>
+            <p class="lede" style="margin-top:16px">
+                So we built what was missing — Saturday tutoring, mentors who show up every week, workshops that
+                teach the things school does not, and camps where a child can simply be a child.
+                Community. Compassion. Change. In that order, always.
+            </p>
+            <p style="font-family:var(--display);font-size:34px;font-style:italic;margin:32px 0 4px">Buhle</p>
+            <p class="alabel" style="margin:0">Founder &amp; Director · Thee Buhle Foundation</p>
+            <a class="btn btn--ghost" style="margin-top:30px" href="/impact">Read our full story</a>
+        </div>
+    </div>
+</section>
+
+<section class="band band--white">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">What we do</p>
+            <h2 class="d3" style="margin-top:16px;max-width:18ch">Four programmes, one continuous line of support</h2>
+        </div>
+        <a class="btn btn--ghost" href="/programmes">See all programmes</a>
+    </div>
+
+    <div class="grid g4">
+        @for (var i = 0; i < Model.Programmes.Count; i++)
+        {
+            var programme = Model.Programmes[i];
+
+            <article class="card card--cream" style="overflow:hidden;display:flex;flex-direction:column">
+                <div class="ph" style="height:190px;background:@IndexModel.GradientFor(i)">Photo · Programme</div>
+                <div style="padding:28px 26px 30px;display:flex;flex-direction:column;flex:1">
+                    <div class="row" style="margin-bottom:12px;gap:10px">
+                        <span style="font-family:var(--display);font-size:20px;font-weight:600;color:var(--gold)">@programme.Number</span>
+                        @if (!string.IsNullOrWhiteSpace(programme.Audience))
+                        {
+                            <span class="chip chip--gold">@programme.Audience</span>
+                        }
+                    </div>
+                    <h3 class="d5" style="font-size:25px">@programme.Name</h3>
+                    <p class="quiet" style="margin:12px 0 20px;flex:1">@programme.Summary</p>
+                    <a class="more-link" href="/programmes/@programme.Slug">Learn more &rarr;</a>
+                </div>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="band band--forest">
+    <div class="head">
+        <div class="grow">
+            <p class="eyebrow">Our impact · @Model.Impact.SchoolYear school year</p>
+            <h2 class="d3" style="margin-top:16px;color:#fff">Numbers we can stand behind</h2>
+        </div>
+    </div>
+
+    <div class="statrow">
+        @foreach (var headline in Model.Impact.Headlines)
+        {
+            <div>
+                <b class="num">@headline.ValueText</b>
+                <em>@headline.Label</em>
+                @if (!string.IsNullOrWhiteSpace(headline.Footnote))
+                {
+                    <small>@headline.Footnote</small>
+                }
+            </div>
+        }
+    </div>
+
+    @*
+        Provenance, on the page. Every figure above is computed from the
+        attendance registers and republished nightly, and saying when it was
+        last computed is the difference between a number and a claim.
+    *@
+    @if (Model.Impact.Headlines.Count > 0)
+    {
+        <p class="quiet" style="color:rgba(255,255,255,.55);margin-top:28px;font-size:12.5px">
+            Computed from our own attendance registers and school-issued results,
+            last updated @Model.Impact.Headlines[0].ComputedAt.ToString("d MMMM yyyy").
+            <a href="/impact" style="color:var(--goldSoft)">How we count what we count</a>.
+        </p>
+    }
+
+    <div style="background:rgba(255,255,255,.08);padding:40px 44px;margin-top:40px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+        <div class="ph" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(140deg,#C2A870,#8B7A55);flex:none"></div>
+        <div style="flex:1;min-width:260px">
+            <blockquote style="font-family:var(--display);font-size:clamp(20px,2.2vw,27px);line-height:1.42;margin:0 0 12px">
+                &ldquo;My daughter went from 42% to 71% in maths in one year. But the bigger change is that she
+                now believes she is a maths person.&rdquo;
+            </blockquote>
+            <p class="alabel" style="color:var(--goldSoft);margin:0">Nomsa D. · Parent, Grade 11 learner · Sebokeng</p>
+        </div>
+        <a class="btn btn--ghostL" href="/impact">View full impact report</a>
+    </div>
+</section>
+
+@if (Model.Events.Count > 0)
+{
+    <section class="band band--cream">
+        <div class="head">
+            <div class="grow">
+                <p class="eyebrow">What&rsquo;s coming up</p>
+                <h2 class="d3" style="margin-top:16px">Come and stand with us</h2>
+            </div>
+            <a class="btn btn--ghost" href="/events">Full events calendar</a>
+        </div>
+
+        <div class="grid g3">
+            @foreach (var occasion in Model.Events)
+            {
+                <article class="card" style="padding:26px 28px;display:flex;gap:24px">
+                    <div class="evdate" style="background:var(--goldSoft)">
+                        <b class="num">@occasion.StartsAt.ToString("dd")</b>
+                        <span>@occasion.StartsAt.ToString("MMM").ToUpperInvariant()</span>
+                    </div>
+                    <div style="flex:1">
+                        <span class="chip chip--gold">@occasion.Type.ToString().ToUpperInvariant()</span>
+                        <h3 class="d5" style="margin-top:10px;font-size:23px">@occasion.Title</h3>
+                        <p class="quiet" style="margin:8px 0 0;font-size:13px">📍 @(occasion.Location ?? occasion.VenueName ?? "")</p>
+                        <p class="dim" style="margin:2px 0 16px;font-size:13px">
+                            @occasion.StartsAt.ToString("HH:mm")
+                            @if (!string.IsNullOrWhiteSpace(occasion.FeeNote))
+                            {
+                                <text> · @occasion.FeeNote</text>
+                            }
+                        </p>
+                        @*
+                            Only shown when it is genuinely scarce. "58 places
+                            left" on a 250-place event is noise; "only 12 left"
+                            is a reason to act now.
+                        *@
+                        @if (occasion.PlacesLeft is { } left && left <= 20)
+                        {
+                            <p class="chip chip--clay" style="margin:0 0 12px">Only @left places left</p>
+                        }
+                        <a class="more-link" href="/events#@occasion.Slug">Register &rarr;</a>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<section class="band band--white">
+    <div class="grid split" style="grid-template-columns:1fr 400px;gap:72px;align-items:start">
+        <div>
+            <p class="eyebrow">Support our work</p>
+            <h2 class="d3" style="margin-top:16px">Where your money actually goes</h2>
+
+            <div style="margin-top:32px">
+                @foreach (var (amount, buys, width) in new[]
+                {
+                    ("R250", "one learner’s Saturday tutoring for a month", 62),
+                    ("R600", "a full term of weekly mentorship", 26),
+                    ("R1 800", "sponsors one learner for a whole school year", 12),
+                })
+                {
+                    <div style="padding-bottom:20px">
+                        <div class="row" style="gap:12px;align-items:baseline;margin-bottom:10px">
+                            <b class="num" style="font-family:var(--display);font-size:26px;font-weight:600">@amount</b>
+                            <span class="quiet">@buys</span>
+                        </div>
+                        <div class="bar" style="height:6px"><i style="width:@(width)%"></i></div>
+                    </div>
+                }
+            </div>
+
+            <div style="background:var(--cream);padding:22px 24px;display:flex;gap:28px;flex-wrap:wrap">
+                @foreach (var (percent, label) in new[]
+                {
+                    ("82%", "straight to programmes"),
+                    ("12%", "transport & meals"),
+                    ("6%", "admin & compliance"),
+                })
+                {
+                    <div>
+                        <b style="font-family:var(--display);font-size:24px;font-weight:600;color:var(--forest);display:block">@percent</b>
+                        <span style="font-size:11px;font-weight:500;color:var(--ink70)">@label</span>
+                    </div>
+                }
+            </div>
+            <p class="dim" style="font-size:12px;margin-top:14px">
+                Audited figures for the 2025 financial year. Our annual financial statements are published in full.
+            </p>
+        </div>
+
+        <aside class="card card--cream pad">
+            <h2 class="d4">Make a donation</h2>
+            <p class="quiet" style="margin:8px 0 22px">
+                Choose an amount and we will take you to our secure payment provider.
+            </p>
+            <div class="stack">
+                <a class="btn btn--forest btn--block" href="/donate">Donate now</a>
+                <a class="btn btn--ghost btn--block" href="/donate#sponsor">Sponsor a learner</a>
+            </div>
+            <p class="dim" style="font-size:11px;margin:16px 0 0;text-align:center">
+                🔒 Card details are entered on our payment provider&rsquo;s site and never reach ours.
+                @if (Registration.CanIssueCertificates)
+                {
+                    <br>@($"Section 18A tax certificate issued on every gift over R{Registration.Threshold:0}.")
+                }
+            </p>
+        </aside>
+    </div>
+</section>
+
+@if (Model.News.Count > 0)
+{
+    <section class="band band--cream">
+        <div class="head">
+            <div class="grow">
+                <p class="eyebrow">News &amp; stories</p>
+                <h2 class="d3" style="margin-top:16px">From the ground</h2>
+            </div>
+            <a class="btn btn--ghost" href="/news">Read the blog</a>
+        </div>
+
+        <div class="grid g3">
+            <partial name="_NewsCards" model="Model.News" />
+        </div>
+    </section>
+}

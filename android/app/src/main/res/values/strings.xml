@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Thee Buhle</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_learn">Learn</string>
+    <string name="nav_buddies">Buddies</string>
+    <string name="nav_progress">Progress</string>
+    <string name="nav_messages">Messages</string>
+    <string name="nav_mentees">Mentees</string>
+    <string name="nav_alerts">Alerts</string>
+
+    <!-- Sign in -->
+    <string name="sign_in_title">Sign in</string>
+    <string name="sign_in_welcome">Welcome back</string>
+    <string name="sign_in_blurb">Your tutoring, your marks, and everything your mentor has noted.</string>
+    <string name="email">Email address</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_in_lockout">Five wrong attempts locks the account for fifteen minutes. If you are locked out, phone the office rather than waiting.</string>
+    <string name="session_ended">Your session has ended. Please sign in again.</string>
+    <string name="sign_out">Sign out</string>
+
+    <!-- Shared -->
+    <string name="retry">Try again</string>
+    <string name="loading">Loading…</string>
+    <string name="offline_title">No connection</string>
+    <string name="problem_title">That did not work</string>
+
+    <!-- Home -->
+    <string name="home_next_session">Your next session</string>
+    <string name="home_attendance">Attendance</string>
+    <string name="home_badges">Badges earned</string>
+    <string name="home_headline_subject">Best improvement</string>
+    <string name="home_forms_waiting">Waiting for your answer</string>
+    <string name="home_recent">Recent sessions</string>
+    <string name="home_attendance_note">%1$d of %2$d sessions</string>
+    <string name="home_no_marks">No marks on file yet</string>
+    <string name="home_form_due">Please answer by %1$s</string>
+    <string name="home_new">NEW</string>
+    <!-- The sign-in wordmark. Read aloud once, as the app name, not letter by letter. -->
+    <string name="wordmark_top" translatable="false">THEE BUHLE</string>
+    <string name="wordmark_bottom" translatable="false">FOUNDATION</string>
+    <string name="form_grant">Give permission</string>
+    <!-- Invitations and resets: there is no sign-up, so the way in for a new
+         person is a one-time code from the foundation. -->
+    <string name="sign_in_have_code">I have a code from the foundation</string>
+    <string name="sign_in_no_account">New here, or forgot your password? The foundation gives you a one-time code.</string>
+    <string name="sign_in_activated">Your password is set. Sign in with it now.</string>
+    <string name="activate_title">Use your code</string>
+    <string name="activate_blurb">For a new account, or a password reset. Enter the code the foundation gave you and choose your password.</string>
+    <string name="activate_code">Your code</string>
+    <string name="activate_code_help">Ten letters and numbers, e.g. K7MPQ-2XRT9</string>
+    <string name="activate_password">New password (at least 12 characters)</string>
+    <string name="activate_confirm">Type it again</string>
+    <string name="activate_submit">Set my password</string>
+    <string name="activate_no_code">No code? Accounts are created by the foundation, because they show a child\'s records. Contact them to be added, or to reset a forgotten password.</string>
+    <string name="activate_back">Back to sign in</string>
+    <string name="form_decline">Decline</string>
+    <string name="form_later">Not now</string>
+    <string name="form_parent_only">A parent or guardian answers this from their own account.</string>
+    <string name="mentee_subtitle">Grade %1$d · %2$d check-ins</string>
+
+    <!-- Learn -->
+    <string name="learn_title">Your subjects</string>
+    <string name="learn_search">Search resources</string>
+    <string name="subject_title">Subject</string>
+    <string name="resources_count">%1$d of %2$d done</string>
+    <string name="subject_meta">Grade %1$d · %2$d of %3$d done</string>
+    <string name="resource_meta_minutes">%1$d min</string>
+    <string name="filter_all">Everything</string>
+    <string name="filter_video">Videos</string>
+    <string name="filter_worksheet">Worksheets</string>
+    <string name="filter_past_paper">Past papers</string>
+    <string name="filter_reading">Reading</string>
+
+    <!-- Progress and badges -->
+    <string name="progress_title">Progress</string>
+    <string name="progress_marks">Marks by subject</string>
+    <string name="progress_mentor">Your mentor</string>
+    <string name="progress_streak">Attendance streak</string>
+    <string name="badges_title">Badges</string>
+    <string name="badges_next">Next badge</string>
+    <string name="progress_meta">%1$s · Grade %2$d</string>
+    <string name="progress_mark_detail">First %1$.0f, latest %2$.0f, over %3$d results</string>
+    <string name="progress_attended">Attended</string>
+    <string name="progress_late">Arrived late</string>
+    <string name="progress_absent">Absent</string>
+    <string name="badges_points">%1$d points · %2$d to the next level</string>
+    <string name="badges_next_detail">Next: %1$s — %2$d to go</string>
+    <string name="badges_all_earned">Every badge earned. Well done.</string>
+    <string name="badges_earned">Earned</string>
+    <string name="badges_to_earn">Still to earn</string>
+    <string name="badges_threshold">%1$d needed</string>
+    <string name="notifications_mark_all">Mark all read</string>
+    <string name="mentee_grade">Grade %1$d</string>
+    <string name="mentee_never">No check-in yet</string>
+    <string name="mentee_today">Checked in today</string>
+
+    <!-- Buddies -->
+    <string name="buddies_suggestions">Suggested study buddies</string>
+    <string name="buddies_groups">Study groups</string>
+    <string name="buddies_request">Request</string>
+    <string name="buddies_requested">Requested</string>
+    <string name="buddies_join">Ask to join</string>
+    <string name="buddies_note">A mentor or staff member approves every buddy and every group. Nobody is paired automatically, and there is no private messaging between learners.</string>
+
+    <!-- Mentor -->
+    <string name="mentees_title">Your learners</string>
+    <string name="check_in_title">Log a check-in</string>
+    <string name="check_in_wellbeing">How are they doing?</string>
+    <string name="check_in_mode">How did you meet?</string>
+    <string name="check_in_areas">What did you talk about?</string>
+    <string name="check_in_notes">Notes</string>
+    <string name="check_in_flag">Flag this as a concern</string>
+    <string name="check_in_flag_note">A flagged concern goes straight to our designated safeguarding lead and is no longer visible to you, including in your own check-in history. If a child is in immediate danger, phone 10111 now.</string>
+    <string name="check_in_save">Save check-in</string>
+    <string name="check_in_overdue">Overdue</string>
+    <string name="check_in_saved">Check-in saved</string>
+    <string name="check_in_escalated">Sent to our safeguarding lead</string>
+    <string name="check_in_not_saved">Not saved — please phone</string>
+    <string name="understood">I understand</string>
+</resources>

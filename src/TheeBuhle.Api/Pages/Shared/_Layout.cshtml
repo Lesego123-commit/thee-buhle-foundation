@@ -1,0 +1,259 @@
+@using TheeBuhle.Api.Pages
+@{
+    var nav = new (string Key, string Label, string Href)[]
+    {
+        ("home", "About Us", "/"),
+        ("programmes", "Programmes", "/programmes"),
+        ("impact", "Impact", "/impact"),
+        ("events", "Events", "/events"),
+        ("news", "News", "/news"),
+        ("contact", "Contact", "/contact"),
+    };
+
+    var current = ViewData["Page"] as string ?? string.Empty;
+    var title = ViewData["Title"] as string ?? "Thee Buhle Foundation";
+    var description = ViewData["Description"] as string
+        ?? "A youth development NPO in Vanderbijlpark, Gauteng — tutoring, mentorship and life skills for young people in the Vaal.";
+    var nextEvent = ViewData["NextEvent"] as NextEventBanner;
+    var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
+}
+<!doctype html>
+<html lang="en-ZA">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@title · Thee Buhle Foundation</title>
+    <meta name="description" content="@description">
+    <meta name="theme-color" content="#2E4034">
+    <link rel="canonical" href="https://theebuhlefoundation.co.za@path">
+
+    @*
+        Open Graph, because most people will meet this site through a WhatsApp
+        link rather than a search result — and an unfurled link with a title and
+        a description is the difference between a tap and a scroll past.
+    *@
+    <meta property="og:site_name" content="Thee Buhle Foundation">
+    <meta property="og:title" content="@title">
+    <meta property="og:description" content="@description">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_ZA">
+    <meta property="og:url" content="https://theebuhlefoundation.co.za@path">
+
+    @*
+        Cormorant Garamond is the display face from the client-approved
+        prototype. preconnect first, so the font request does not also wait on a
+        fresh DNS lookup and TLS handshake — which on a 3G connection is most of
+        the time it takes. display=swap means the text is readable in the
+        fallback serif immediately rather than invisible while the webfont
+        downloads.
+    *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@@0,400;0,500;0,600;1,400&family=Inter:wght@@400;500;600;700&display=swap">
+
+    @* asp-append-version stamps a content hash onto the URL, so a stylesheet
+       or script the client updates is fetched again instead of being served
+       from a visitor's cache for a week. *@
+    <link rel="stylesheet" href="~/assets/css/heritage.css" asp-append-version="true">
+
+    @*
+        Structured data, so a search result for the foundation shows the real
+        organisation — the address, the phone number, the area served — rather
+        than whatever a crawler infers. For a small NPO that nobody is searching
+        for by name yet, this is most of what makes it findable at all.
+    *@
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "NGO",
+      "name": "Thee Buhle Foundation",
+      "alternateName": "Thee Buhle",
+      "slogan": "Giving back, one child at a time & beyond",
+      "url": "https://theebuhlefoundation.co.za",
+      "email": "hello@@theebuhlefoundation.co.za",
+      "telephone": "+27710000000",
+      "address": {
+        "@@type": "PostalAddress",
+        "streetAddress": "Cornwallis Street S.E.7",
+        "addressLocality": "Vanderbijlpark",
+        "addressRegion": "Gauteng",
+        "postalCode": "1911",
+        "addressCountry": "ZA"
+      },
+      "areaServed": "Vaal Triangle, Gauteng, South Africa"
+    }
+    </script>
+
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body>
+
+@*
+    The first focusable element on every page. A keyboard user should not have
+    to tab through six navigation links on every single page to reach the
+    content — WCAG 2.4.1.
+*@
+<a class="skip" href="#main">Skip to the main content</a>
+
+@if (nextEvent is not null)
+{
+    <div class="annbar">
+        <b>NEXT EVENT</b>
+        <span>@nextEvent.Title &nbsp;·&nbsp; @nextEvent.When &nbsp;·&nbsp; @nextEvent.Where</span>
+        <a href="/events#@nextEvent.Slug">Register &rarr;</a>
+    </div>
+}
+
+<header class="siteheader">
+    <a class="mark" href="/" aria-label="Thee Buhle Foundation — home">
+        <b>THEE BUHLE</b>
+        <span>FOUNDATION</span>
+    </a>
+
+    <nav class="navlinks" aria-label="Main">
+        @foreach (var (key, label, href) in nav)
+        {
+            @* aria-current tells a screen reader which page this is, which the
+               visual underline conveys to everybody else. *@
+            @if (key == current)
+            {
+                <a href="@href" aria-current="page">@label</a>
+            }
+            else
+            {
+                <a href="@href">@label</a>
+            }
+        }
+    </nav>
+
+    <div class="headact">
+        <a class="btn btn--ghost" href="/volunteer">Volunteer</a>
+        <a class="btn btn--gold" href="/donate">Donate</a>
+    </div>
+
+    <button class="burger" id="burger" aria-label="Open the menu" aria-expanded="false" aria-controls="drawer">
+        <i></i><i></i><i></i>
+    </button>
+</header>
+
+<div class="drawer" id="drawer">
+    @foreach (var (_, label, href) in nav)
+    {
+        <a class="dl" href="@href">@label <span aria-hidden="true">&rarr;</span></a>
+    }
+    <div class="dact">
+        <a class="btn btn--gold btn--block" href="/donate">Donate</a>
+        <a class="btn btn--ghostL btn--block" href="/volunteer">Volunteer with us</a>
+    </div>
+    <div class="dfoot">
+        hello@@theebuhlefoundation.co.za<br>
+        +27&nbsp;71&nbsp;000&nbsp;0000 &nbsp;·&nbsp; Vanderbijlpark
+    </div>
+</div>
+
+<main id="main">
+    @RenderBody()
+</main>
+
+<section class="newsletter">
+    <div class="grow">
+        <h2 class="d4">Stay close to the work</h2>
+        <p>One email a month — programme news, upcoming events and the stories behind the numbers.</p>
+    </div>
+    <form class="row" data-newsletter style="gap:10px">
+        <label class="visually-hidden" for="nl-email">Your email address</label>
+        <input class="input" id="nl-email" name="email" type="email" required
+               style="width:300px" placeholder="your@@email.co.za" autocomplete="email">
+        <button class="btn btn--forest" type="submit">Subscribe</button>
+        <p class="notice" data-notice hidden style="flex-basis:100%"></p>
+    </form>
+</section>
+
+<footer class="foot">
+    <div class="foot-top">
+        <div style="max-width:300px">
+            <div class="mark" style="align-items:flex-start;margin-bottom:20px">
+                <b style="color:#fff">THEE BUHLE</b>
+                <span style="color:rgba(255,255,255,.75)">FOUNDATION</span>
+            </div>
+            <p style="color:rgba(255,255,255,.65);line-height:1.7;margin:0 0 22px">
+                Giving back, one child at a time &amp; beyond.<br>Community · Compassion · Change
+            </p>
+            <div class="chipset">
+                <a class="chip" style="background:none;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);text-decoration:none"
+                   href="https://www.instagram.com/theebuhlefoundation/" rel="noopener noreferrer">Instagram</a>
+                <a class="chip" style="background:none;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);text-decoration:none"
+                   href="https://wa.me/27710000000" rel="noopener noreferrer">WhatsApp</a>
+            </div>
+        </div>
+        <div style="display:flex;gap:64px;flex-wrap:wrap;margin-left:auto">
+            <div class="foot-col">
+                <h2>Explore</h2>
+                <a href="/">About Us</a>
+                <a href="/programmes">Programmes</a>
+                <a href="/impact">Impact &amp; Statistics</a>
+                <a href="/events">Events</a>
+                <a href="/news">News &amp; Blog</a>
+            </div>
+            <div class="foot-col">
+                <h2>Get involved</h2>
+                <a href="/donate">Donate</a>
+                <a href="/volunteer">Volunteer sign-up</a>
+                <a href="/donate#sponsor">Sponsor a child</a>
+                <a href="/contact#partner">Partner with us</a>
+            </div>
+            <div class="foot-col">
+                <h2>Contact</h2>
+                <a href="/contact">Vanderbijlpark, Gauteng</a>
+                <a href="mailto:hello@@theebuhlefoundation.co.za">hello@@theebuhlefoundation.co.za</a>
+                <a href="tel:+27710000000">+27 71 000 0000</a>
+                @if (Registration.HasNpoNumber)
+                {
+                    <span style="font-size:13px;color:rgba(255,255,255,.7)">@Registration.NpoDisplay</span>
+                }
+                @if (Registration.HasPboNumber)
+                {
+                    <span style="font-size:13px;color:rgba(255,255,255,.7)">@Registration.PboDisplay</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="foot-bar">
+        <span>&copy; @DateTime.Now.Year Thee Buhle Foundation.@(Registration.CanIssueCertificates ? " Registered NPO & PBO, South Africa." : Registration.HasNpoNumber ? " Registered NPO, South Africa." : "")</span>
+        <span class="spread"><a href="/privacy">Privacy policy</a></span>
+        <span><a href="/safeguarding">POPIA &amp; child safeguarding</a></span>
+        @*
+            Honesty about the data on display. Every learner name, mark and
+            financial figure on this deployment is invented — see
+            DatabaseSeeder. Saying so on the page, rather than only in the
+            README, means nobody demonstrating the site can mislead by accident.
+        *@
+        <span>Demonstration deployment · learner data is illustrative</span>
+    </div>
+</footer>
+
+<div class="stickybar">
+    <a class="btn btn--gold" href="/donate">Donate</a>
+    <a class="btn btn--ghost" href="/volunteer">Volunteer</a>
+</div>
+
+@*
+    Same-origin: the API is this same application, mounted at /api.
+
+    Passed as an attribute on the script tag rather than assigned to a global in
+    an inline <script>. This site sends script-src 'self' with no
+    'unsafe-inline', so an inline assignment is blocked by the browser — it ran
+    nowhere, api.js fell back to the PHP prototype's own default, and every form
+    on the site posted to /api/v1/… and got a 404. The page looked perfect and
+    nothing worked.
+
+    An attribute is read by api.js itself, so there is no inline script to
+    block, and pointing the site at a different origin stays a one-word edit.
+*@
+<script src="~/assets/js/api.js" data-api-base="/api" asp-append-version="true" defer></script>
+<script src="~/assets/js/site.js" asp-append-version="true" defer></script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

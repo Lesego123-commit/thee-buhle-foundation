@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/TheeBuhle.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            style="@style/TheeBuhle.Eyebrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_next_session" />
+
+        <TextView
+            android:id="@+id/sessionFocus"
+            style="@style/TheeBuhle.Display"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="22sp"
+            tools:text="Mathematics · Trigonometry" />
+
+        <TextView
+            android:id="@+id/sessionWhen"
+            style="@style/TheeBuhle.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/forest"
+            tools:text="Sat 26 Sep · 09:00 – 12:30" />
+
+        <TextView
+            android:id="@+id/sessionWhere"
+            style="@style/TheeBuhle.Quiet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            tools:text="Sebokeng Community Centre, Hall A" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,56 @@
+@model IReadOnlyList<NewsSummary>
+@*
+    The news card grid, shared by the home page and the News index — so an
+    article card looks identical wherever it appears rather than drifting into
+    two slightly different cards.
+
+    data-category on each article is what the News page's filter chips read, so
+    filtering is instant and needs no round trip.
+*@
+@{
+    // A gradient per card. The client has not supplied photography, so cards
+    // are distinguished by colour from the Heritage palette — six of them, so a
+    // page of nine articles does not read as three repeated pairs.
+    static string Gradient(int index) => (index % 6) switch
+    {
+        0 => "linear-gradient(150deg,#2E4034,#6B7A5E)",
+        1 => "linear-gradient(150deg,#8B7A55,#C2A870)",
+        2 => "linear-gradient(150deg,#3A4A55,#7E93A0)",
+        3 => "linear-gradient(150deg,#2E4034,#8B7A55)",
+        4 => "linear-gradient(150deg,#6B4F3A,#A87C32)",
+        _ => "linear-gradient(150deg,#8B7A55,#D9CDB4)",
+    };
+
+    // The enum names are PascalCase; the design calls for spaced capitals.
+    static string Label(NewsCategory category) => category switch
+    {
+        NewsCategory.SuccessStory => "SUCCESS STORY",
+        NewsCategory.ProgrammeUpdate => "PROGRAMME UPDATE",
+        NewsCategory.Community => "COMMUNITY",
+        NewsCategory.Announcement => "ANNOUNCEMENT",
+        NewsCategory.Press => "PRESS",
+        _ => category.ToString().ToUpperInvariant(),
+    };
+}
+
+@for (var i = 0; i < Model.Count; i++)
+{
+    var post = Model[i];
+
+    <article class="card card--cream" style="overflow:hidden" data-category="@post.Category">
+        <div class="ph" style="height:210px;background:@Gradient(i)">Photo · Article</div>
+        <div style="padding:26px 26px 30px">
+            <p style="margin:0 0 12px;font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--gold)">
+                @Label(post.Category)
+                <span class="dim" style="letter-spacing:0;font-weight:400">· @post.PublishedAt.ToString("d MMM yyyy")</span>
+            </p>
+            <h3 class="d5" style="font-size:25px">
+                <a href="/news/@post.Slug" style="text-decoration:none">@post.Title</a>
+            </h3>
+            <p class="quiet" style="margin:10px 0 18px">@post.Excerpt</p>
+            <p class="dim" style="margin:0;font-size:12px">
+                @post.AuthorName · @post.ReadMinutes min read
+            </p>
+        </div>
+    </article>
+}

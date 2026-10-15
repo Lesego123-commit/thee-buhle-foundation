@@ -1,0 +1,37 @@
+erDiagram
+    learners ||--o{ mentor_assignments : "learner_id"
+    mentor_assignments ||--o{ check_ins : "assignment_id"
+    mentors ||--o{ mentor_assignments : "mentor_id"
+    volunteer_applications ||--o{ compliance_documents : "application_id"
+    check_ins {
+        uniqueidentifier id PK
+        uniqueidentifier assignment_id FK
+        date occurred_on
+        nvarchar mode
+        nvarchar wellbeing
+        nvarchar notes
+        nvarchar support_areas
+        bit concern_flagged
+        uniqueidentifier escalated_to FK
+        datetimeoffset escalated_at
+        datetimeoffset closed_at
+        uniqueidentifier closed_by FK
+        nvarchar outcome
+    }
+    compliance_documents {
+        uniqueidentifier id PK
+        uniqueidentifier application_id FK
+        nvarchar doc_type
+        nvarchar storage_path
+        uniqueidentifier verified_by FK
+        datetimeoffset verified_at
+        date expires_at
+    }
+    mentor_assignments {
+        uniqueidentifier id PK
+        uniqueidentifier mentor_id FK
+        uniqueidentifier learner_id FK,UK
+        int school_year UK
+        nvarchar status
+        uniqueidentifier approved_by FK
+    }
